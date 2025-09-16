@@ -1,0 +1,114 @@
+correction simple et variables globables:
+
+/bin/ls 
+>>>  ok
+
+../bin/ls
+>>>  ../bin/ls: No such file or directory
+>>>  ok
+
+../../../../../../bin/ls
+>>>  ok
+
+1 variable : 
+extern int g_exit_status;
+pour gestion de numero de exit, a tester
+
+commande vide
+enter >>>  ok
+true >>>  ok
+false
+echo $?
+>>>  ok
+
+space and tab
+>>>  ok space
+>>>  tab a savoir si tab doit realiser la fonction de completion ou non
+>>>  actuallement tab realise cette fonction
+
+Arguments:
+
+ls
+pwd
+echo hello
+whoami
+date
+ls -l
+ls -a -l
+echo hello world
+cat /etc/passwd
+cd ..
+cd /
+>>> ok
+cd juju\ mm
+>>>ok
+export TEST=123
+env
+>>> ok
+unset TEST
+>>> ok
+exit
+exit oo
+>>> ok
+ls | wc -l
+cat /etc/passwd | grep root | wc -l
+echo hello | cat
+echo hello > out.txt
+cat < out.txt
+ls >> out.txt
+>>> ok
+| ls
+ls |
+| ls |
+ls | | wc
+>>> ok
+
+>
+< 
+>> 
+ls > 
+ls < 
+ls >>
+>>> ok minishell: Syntax error
+
+echo $TEST
+export TEST=42
+echo $TEST
+unset TEST
+echo $TEST
+>>> ok
+
+PATH d'environnement
+ls
+export PATH=
+echo $PATH
+ls
+>>> ok : ls: No such file or directory
+
+ls > file1 > file2
+>>> a verifier si shell en linux standrad sort file1 avec output vide ou sans prend compte de file1
+>>> ok file2 sort output ls, marche comme shell standrad
+
+cat << EOF < out.txt
+> hehe
+> haha
+> EOF
+hello ewe
+ded
+juju
+jiji
+ki
+cat out.txt
+hello ewe
+ded
+juju
+jiji
+ki
+>>> actuallement, minishell retourne stdin avant EOF, a tester shell en linux standard retourne stdin avant EOF ou content de out.txt
+
+cat << EOF > out.txt
+cat << EOF >> out.txt
+>>> ok
+
+cat | cat | ls
+>>> ok actuallement, a verfier la reeaction de shell en linux
