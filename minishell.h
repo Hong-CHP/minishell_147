@@ -115,6 +115,13 @@ typedef struct s_no_rep_dol
 	int		idx;
 }				t_no_rep_dol;
 
+typedef struct s_hd_limit
+{
+	char	*word;
+	int		len;
+	int		dollar;
+}				t_hd_limit;
+
 //readline_utils.c
 int		has_unclosed_quote(char *input);
 //minishell.c
@@ -225,5 +232,7 @@ int		builtin_cd(t_command *cmd);
 int		builtin_pwd(void);
 int		builtin_env(char **ev, t_varlist **head);
 int		builtin_exit(t_command *cmd);
+// here_doc_limit.c
+char	*get_heredoc_limit(char *input, int *move);
 
 #endif

@@ -102,9 +102,6 @@ int	handle_heredoc_parse(t_parser *p, t_cmdlist *node)
 		return (set_error(p, "syntax error near unexpected token `newline'", 2));
 	if (node->command->here_doc != 0)
 		free(node->command->limiter);
-	// if (!*p->current->value)
-	// 	node->command->limiter = ft_strdup("");
-	// else if ()
 	node->command->limiter = ft_strdup(p->current->value);
 	if (!node->command->limiter)
 		return (1);

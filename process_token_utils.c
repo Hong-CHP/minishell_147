@@ -40,6 +40,12 @@ int	is_cmd_token(int type)
 		 || type == TOKEN_REDIR_HEREDOC);
 }
 
+int	set_syntaxe_err(t_parser *parser)
+{
+	set_error(parser, "syntax error near unexpected token '|'", 2);
+	return (1);
+}
+
 int	invalide_syntaxe_token(t_parser *parser, t_token *tokens)
 {
 	t_token	*cur;
@@ -48,22 +54,13 @@ int	invalide_syntaxe_token(t_parser *parser, t_token *tokens)
 	if (!cur)
 		return (0);
 	if (cur->type == TOKEN_PIPE)
-	{
-		set_error(parser, "syntax error near unexpected token '|'", 2);
-		return (1);
-	}
+		return (set_syntaxe_err(parser));
 	while (cur)
 	{
 		if (cur->type == TOKEN_PIPE && (!cur->next->value || cur->next->type == TOKEN_PIPE))
-		{
-			set_error(parser, "syntax error near unexpected token '|'", 2);
-			return (1);
-		}
+			return (set_syntaxe_err(parser));
 		if (cur->type == TOKEN_OR && cur->next->type == TOKEN_PIPE)
-		{
-			set_error(parser, "syntax error near unexpected token '|'", 2);
-			return (1);
-		}
+			return (set_syntaxe_err(parser));
 		if (cur->type == TOKEN_LPAREN || cur->type == TOKEN_RPAREN
 			|| cur->type == TOKEN_SEMICOLON)
 		{

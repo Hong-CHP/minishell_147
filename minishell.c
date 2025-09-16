@@ -63,6 +63,8 @@ void	free_cmdlist(t_cmdlist **head_cmd)
 			free(cur->command->infile);
 		if (cur->command->outfile)
 			free(cur->command->outfile);
+		if (cur->command->limiter)
+			free(cur->command->limiter);
 		free(cur->command);
 		free(cur);
 		cur = next;
@@ -167,7 +169,6 @@ void	execute_cmd_or_cmds(t_varlist **head_var, t_cmdlist **head_cmd, t_pipex	*pi
 		}
 		else
 			get_in_out_files_fd(head_cmd, pipe_data, parser);
-		// printf("fd[0]: %d, fd[1]: %d\n", pipe_data->f_fds[0], pipe_data->f_fds[1]);
 		execute_pipeline(head_cmd, pipe_data, parser);
 		if ((*head_cmd)->command->here_doc == 1)
 			unlink("here.txt");
@@ -182,7 +183,6 @@ void	execute_cmd_or_cmds(t_varlist **head_var, t_cmdlist **head_cmd, t_pipex	*pi
 		else
 			if (!get_in_out_files_fd(head_cmd, pipe_data, parser))
 				return ;
-		// printf("fd[0]: %d, fd[1]: %d\n", pipe_data->f_fds[0], pipe_data->f_fds[1]);
 		execute_single_cmd(head_var, (*head_cmd)->command, pipe_data, parser);
 		if ((*head_cmd)->command->here_doc == 1)
 			unlink("here.txt");

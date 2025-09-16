@@ -33,55 +33,6 @@ t_token *create_token(t_tk_type type, char *value)
 	return (tok);
 }
 
-void	if_quote_in_limit_heredoc(char *limit, char *word, int *i, int *len)
-{
-	char	quote;
-
-	quote = limit[(*i)++];
-	while (limit[*i] && limit[*i] != quote)
-		word[(*len)++] = limit[(*i)++];
-	if (limit[*i] == quote)
-		(*i)++;
-}
-
-char	*get_heredoc_limit(char *limit, char *word, int *move)
-{
-	int		i;
-	int		len;
-	int		dollar;
-
-	i = 0;
-	len = 0;
-	dollar = 0;
-	while (limit[i] && limit[i] != ' ')
-	{
-		if (limit[i] == '$')
-		{
-			if ((limit[i + 1] && (limit[i + 1] == '\'' || limit[i + 1] == '"')))
-			{
-				i++;
-				if_quote_in_limit_heredoc(limit, word, &i, &len);
-			}
-			else if (limit[i + 1] && limit[i + 1] == '$')
-			{
-				word[len++] = limit[i++];
-				dollar++;
-				if (limit[i] == '$' && (limit[i + 1] == '\'' || limit[i + 1] == '"') && dollar % 2 == 1)
-					word[len++] = '$';
-			}
-			else
-				word[len++] = limit[i++];
-		}
-		else if (limit[i] == '"' || limit[i] == '\'')
-			if_quote_in_limit_heredoc(limit, word, &i, &len);
-		else
-			word[len++] = limit[i++];
-	}
-	*move = i;
-	word[len] = '\0';
-	return (word);
-}
-
 t_token	*create_word_token(t_parser *parser, t_varlist **head_var, t_token *prev_tok)
 {
 	char	*word;
@@ -92,11 +43,7 @@ t_token	*create_word_token(t_parser *parser, t_varlist **head_var, t_token *prev
 	tok = NULL;
 	if (prev_tok && prev_tok->type == TOKEN_REDIR_HEREDOC)
 	{
-		word = malloc(sizeof(char) * (ft_strlen(&parser->input[parser->pos]) + 1));
-		if (!word)
-			return (NULL);
-		ft_memset(word, 0, ft_strlen(&parser->input[parser->pos]) + 1);
-		get_heredoc_limit(&parser->input[parser->pos], word, &move);
+		word = get_heredoc_limit(&parser->input[parser->pos], &move);
 		parser->pos += move;
 	}
 	else
