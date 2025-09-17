@@ -34,7 +34,8 @@ void    if_dollar_in_limit_heredoc(t_hd_limit *limit, char *input, int *i)
 	{
 		limit->word[limit->len++] = input[(*i)++];
 		limit->dollar++;
-		if (input[*i] == '$' && (input[*i + 1] == '\'' || input[*i + 1] == '"') && limit->dollar % 2 == 1)
+		if (input[*i] == '$' && (input[*i + 1] == '\'' || input[*i + 1] == '"')
+			&& limit->dollar % 2 == 1)
 			limit->word[limit->len++] = '$';
 	}
 	else

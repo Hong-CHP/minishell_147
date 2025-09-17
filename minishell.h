@@ -175,11 +175,15 @@ t_token	*create_simple_token(t_parser *parser, int type, const char *s);
 //extract_word.c
 char	*extract_word(t_parser *parser, t_varlist **head_var);
 char	*extract_by_type_sign(char *buf, t_parser *parser, t_handler_qt **handler);
-//extract_word_utils.c
 int				if_still_space(char *res);
+//extract_word_utils.c
 t_handler_qt    *new_handler_node(int start);
 void    		add_handler_lst_back(t_handler_qt **handler, t_handler_qt *node);
+void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var);
 void    free_handler_lst(t_handler_qt **handler);
+void	join_free_for_word(char **res, char *str);
+char	*init_buf_for_extract(char **buf, t_parser *parser, t_handler_qt **handler);
+void	extract_word_front(t_handler_qt *cur, char **res, t_parser *parser, t_varlist **head_var);
 //dollar_sign.c
 char	*reg_dollar_sign(char *str, t_varlist **head_var);
 //dollar_sign_utils.c
