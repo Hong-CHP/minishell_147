@@ -120,16 +120,30 @@ char	*fill_words_with_real_vals(char *str, char **vars, char **vals, int t_len)
 	return (word);
 }
 
-char	*replace_init_val_by_real_val(t_varlist **head_var, char ***vars, char ***vals, char *str)
+char	*replace_init_val_by_real_val(t_varlist **head_var, t_parser *parser, int nb_vars, char *str)
 {
 	char	*word;
 	int		t_len;
+	char	**vars;
+	char	**vals;
 
-	t_len = get_vals_and_tot_len(str, *vals, *vars, head_var);
-	word = fill_words_with_real_vals(str, *vars, *vals, t_len);
+	vars = NULL;
+	vals = NULL;
+	vars = malloc(sizeof(char *) * (nb_vars + 1));
+	if (!vars)
+		return (NULL);
+	find_dollar_sign(str, vars);
+	vals = malloc(sizeof(char *) * (nb_vars + 1));
+	if (!vals)
+	{
+		free_vars_vals(vars, NULL);
+		return (NULL);
+	}
+	t_len = get_vals_and_tot_len(str, vals, vars, head_var, parser);
+	word = fill_words_with_real_vals(str, vars, vals, t_len);
 	if (!word)
 	{
-		free_vars_vals(*vars, *vals);
+		free_vars_vals(vars, vals);
 		return (NULL);
 	}
 	return (word);

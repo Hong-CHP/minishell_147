@@ -2,12 +2,15 @@
 #include "libft.h"
 #include <signal.h>
 
-int g_exit_status = 0;
+int catch = 0;
 
 void	handle_sigint(int sig)
 {
 	(void)sig;
-	g_exit_status = 130;
+	if (catch == 1)
+	{
+		return ;
+	}
 	ft_putchar_fd('\n', 1);
 	rl_replace_line("", 0); 
 	rl_on_new_line();
@@ -25,10 +28,11 @@ void	setup_sigaction(void)
 	signal(SIGQUIT, SIG_IGN);
 }
 
-void	read_the_line(char *input, t_varlist **head_var, char **envp)
+void	read_the_line(char *input, t_varlist **head_var, char **envp, int *g_exit)
 {
 	while (1)
 	{
+		catch = 0;
 		input = readline("\1\033[1;33m\2minishell\1\033[0m\2> ");
 		if (input == NULL)
 		{
@@ -46,7 +50,7 @@ void	read_the_line(char *input, t_varlist **head_var, char **envp)
 		else if (*input)
 		{
 			add_history(input);
-			minishell(input, head_var, envp);
+			minishell(input, head_var, envp, g_exit);
 			free(input);
 		}
 	}
@@ -57,10 +61,12 @@ int	main(int argc, char **argv, char **envp)
 {
 	char		*input;
 	t_varlist	*head_var;
-	int		envp_size;
-	int		i;
+	int			envp_size;
+	int			i;
+	int			g_exit;
+
 	(void)argv;
-	
+	g_exit = 0;
 	if (argc != 1)
 		return (1);
 	envp_size = count_size_of_envp(envp);
@@ -73,7 +79,7 @@ int	main(int argc, char **argv, char **envp)
 		create_var_list_for_ev(&head_var, envp[i]);
 		i++;
 	}
-	read_the_line(input, &head_var, envp);
+	read_the_line(input, &head_var, envp, &g_exit);
 	clean_var_list(&head_var);
 	return (0);
 }

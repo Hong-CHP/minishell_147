@@ -101,12 +101,12 @@ char *check_same_var_in_varlist(char *var, t_varlist **head_var)
     return (NULL);
 }
 
-int    get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_var)
+int    get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_var, t_parser *parser)
 {
-    int i;
-    size_t vars_len;
-    size_t vals_len;
-    int t_len;
+    int		i;
+    size_t	vars_len;
+    size_t	vals_len;
+    int		t_len;
 
     i = 0;
     vars_len = 0;
@@ -116,7 +116,7 @@ int    get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **hea
 		vars_len += ft_strlen(vars[i]);
         vals[i] = check_same_var_in_varlist(vars[i], head_var);
 		if (!vals[i] && ft_strcmp(vars[i], "?") == 0)
-			vals[i] = ft_itoa(g_exit_status);
+			vals[i] = ft_itoa(*parser->g_exit_status);
 		else if (!vals[i])
 			vals[i] = ft_strdup("");
         vals_len += ft_strlen(vals[i]);
@@ -127,30 +127,30 @@ int    get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **hea
     return (t_len);
 }
 
-char	*reg_dollar_sign(char *str, t_varlist **head_var)
+char	*reg_dollar_sign(char *str, t_varlist **head_var, t_parser *parser)
 {
 	int		nb_vars;
-	char	**vars;
+	// char	**vars;
+	// char	**vals;
 	char	*word;
-	char	**vals;
 
 	word = NULL;
 	nb_vars = if_dollar_sign(str);
 	if (nb_vars == 0)
 		return (ft_strdup(str));
-	vars = malloc(sizeof(char *) * (nb_vars + 1));
-	if (!vars)
-		return (NULL);
-	find_dollar_sign(str, vars);
-	vals = malloc(sizeof(char *) * (nb_vars + 1));
-	if (!vals)
-	{
-		free_vars_vals(vars, vals);
-		return (NULL);
-	}
-	word = replace_init_val_by_real_val(head_var, &vars, &vals, str);
+	// vars = malloc(sizeof(char *) * (nb_vars + 1));
+	// if (!vars)
+	// 	return (NULL);
+	// find_dollar_sign(str, vars);
+	// vals = malloc(sizeof(char *) * (nb_vars + 1));
+	// if (!vals)
+	// {
+	// 	free_vars_vals(vars, vals);
+	// 	return (NULL);
+	// }
+	word = replace_init_val_by_real_val(head_var, parser, nb_vars, str);
 	if (!word)
 		return (NULL);
-	free_vars_vals(vars, vals);
+	// free_vars_vals(vars, vals);
 	return (word);
 }

@@ -76,7 +76,7 @@ t_cmdlist	*parse_simple_cmd(t_parser *parser, t_varlist **head_var)
 	}
 	node->next = NULL;
 	return (node);
-}_status = 0;
+}
 
 t_cmdlist	*parse_pipeline(t_parser *parser, t_varlist **head_var)
 {
@@ -87,7 +87,7 @@ t_cmdlist	*parse_pipeline(t_parser *parser, t_varlist **head_var)
 	while (parser->current && parser->current->type != TOKEN_EOF)
 	{
 		cmd_node = parse_simple_cmd(parser, head_var);
-		if (!cmd_node)_status = 0;
+		if (!cmd_node)
 		{
 			// clean_cmdlist(&head);
 			return (NULL);

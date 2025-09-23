@@ -179,7 +179,7 @@ char *extract_word(t_parser *parser, t_varlist **head_var, int *last_pos, char *
 		if (cur->start_qt_buf > *last_pos)
 		{
 			part = ft_substr(buf, *last_pos, cur->start_qt_buf - *last_pos);
-			handler_dollar_in_word(part, res, head_var);
+			handler_dollar_in_word(part, res, head_var, parser);
 		}
 		extract_word_front(cur, res, parser, head_var);
 		*last_pos = cur->end_qt_buf + 1;
@@ -188,7 +188,7 @@ char *extract_word(t_parser *parser, t_varlist **head_var, int *last_pos, char *
 	if (*last_pos < (int)(ft_strlen(buf)))
 	{
 		part = ft_strdup(&buf[*last_pos]);
-		handler_dollar_in_word(part, res, head_var);
+		handler_dollar_in_word(part, res, head_var, parser);
 	}
 	free(buf);
 	free_handler_lst(&handler);

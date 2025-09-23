@@ -30,7 +30,7 @@ int	set_error(t_parser *p, char *msg, int err_code)
 	}
 	p->error = 1;
 	p->error_msg = ft_strdup(msg);
-	g_exit_status = err_code;
+	*p->g_exit_status = err_code;
 	return (1);
 }
 

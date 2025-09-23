@@ -3,50 +3,20 @@
 
 int	handle_word(t_parser *p, char **args, int *argc)
 {
-	char	**split_word;
-	int		i;
-	char	*pos_quote;
-
-	pos_quote = ft_strnstr(p->input, p->current->value, ft_strlen(p->input));
-	if (p->input && (pos_quote - p->input - 1 > 0)
-		&& p->input[pos_quote - p->input - 1] != '"'
-		&& p->input && p->input[pos_quote - p->input - 1] != '\''
-		&& if_still_space(p->current->value))
+	args[*argc] = ft_strdup(p->current->value);
+	if (!args[*argc])
+		return (1);
+	if (!*args[*argc])
 	{
-		i = 0;
-		split_word = ft_split(p->current->value, ' ');
-		while (split_word[i])
+		if (p->current->value[0] == '\0' && *argc == 0)
 		{
-			args[*argc] = ft_strdup(split_word[i]);
-			if (!args[*argc])
-				return (1);
-			if (!*args[*argc])
-			{
-				(*argc)++;
-				return (0);
-			}
-			(*argc)++;
-			i++;
-		}
-		free_split(split_word);
-	}
-	else
-	{
-		args[*argc] = ft_strdup(p->current->value);
-		if (!args[*argc])
-			return (1);
-		if (!*args[*argc])
-		{
-			if (p->current->value[0] == '\0' && *argc == 0)
-			{
-				free(args[*argc]);
-				return (0);
-			}
-			(*argc)++;
+			free(args[*argc]);
 			return (0);
 		}
 		(*argc)++;
+		return (0);
 	}
+	(*argc)++;
 	return (0);
 }
 
@@ -123,3 +93,32 @@ int		process_token(t_parser *p, t_cmdlist *node)
 		err = handle_heredoc_parse(p, node);
 	return (err);
 }
+
+// char	**split_word;
+// int		i;
+// char	*pos_quote;
+// pos_quote = ft_strnstr(p->input, p->current->value, ft_strlen(p->input));
+// if (p->input && (pos_quote - p->input - 1 > 0)
+// 	&& p->input[pos_quote - p->input - 1] != '"'
+// 	&& p->input && p->input[pos_quote - p->input - 1] != '\''
+// 	&& if_still_space(p->current->value))
+// {
+// 	i = 0;
+// 	split_word = ft_split(p->current->value, ' ');
+// 	while (split_word[i])
+// 	{
+// 		args[*argc] = ft_strdup(split_word[i]);
+// 		if (!args[*argc])
+// 			return (1);
+// 		if (!*args[*argc])
+// 		{
+// 			(*argc)++;
+// 			return (0);
+// 		}
+// 		(*argc)++;
+// 		i++;
+// 	}
+// 	free_split(split_word);
+// }
+// else
+// {

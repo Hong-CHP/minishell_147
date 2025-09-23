@@ -95,7 +95,8 @@ int		builtin_echo(t_command *cmd)
 	{
 		if (ft_strncmp(cmd->args[i], "-n", 2) != 0)
 			put_echo_content(cmd, &i);
-		else if (ft_strncmp(cmd->args[i], "-n", 2) == 0 && !check_echo_n_in_args(cmd->args[i]))
+		else if (ft_strncmp(cmd->args[i], "-n", 2) == 0
+			&& !check_echo_n_in_args(cmd->args[i]))
 			put_echo_content(cmd, &i);
 		else
 			newline = 0;

@@ -152,5 +152,5 @@ void	execute_pipeline(t_cmdlist **head_cmd, t_pipex *pipe_data, t_parser *parser
 		last_pid = fork_and_pid(head_cmd, cur, pipe_data, parser);
 		cur = cur->next;
 	}
-	g_exit_status = wait_child_process(last_pid);
+	*parser->g_exit_status = wait_child_process(last_pid);
 }

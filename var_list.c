@@ -129,13 +129,11 @@ void	reg_variable_list_issue(char *input, t_varlist **head)
 	free(find_var);
 }
 
-int		create_var_list_or_find_node(t_varlist **head, char *input, t_cmdlist **head_cmd, t_parser *parser)
+int		create_var_list_or_find_node(t_varlist **head, t_cmdlist **head_cmd, t_parser *parser)
 {
 	t_cmdlist	*cur;
 	int			i;
-	(void)input;
-	(void)parser;
-
+	
 	cur = *head_cmd;
 	while (cur)
 	{
@@ -145,7 +143,7 @@ int		create_var_list_or_find_node(t_varlist **head, char *input, t_cmdlist **hea
 			if (ft_strchr(cur->command->args[i], '='))
 				reg_variable_list_issue(cur->command->args[i], head);
 			else
-				minishell(cur->command->args[i], head, NULL);
+				minishell(cur->command->args[i], head, NULL, parser->g_exit_status);
 			i++;
 		}
 		cur = cur->next;

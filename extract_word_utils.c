@@ -92,7 +92,7 @@ void	free_handler_lst(t_handler_qt **handler)
 	handler = NULL;
 }
 
-void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var)
+void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var, t_parser *parser)
 {
 	char	*tmp;
 	char	*new;
@@ -100,7 +100,7 @@ void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var)
 	if (ft_strchr(part, '$'))
 	{
 		tmp = part;
-		part = reg_dollar_sign(tmp, head_var);
+		part = reg_dollar_sign(tmp, head_var, parser);
 		free(tmp);
 	}
 	new = ft_strjoin(*res, part);
@@ -140,7 +140,7 @@ void	extract_word_front(t_handler_qt *cur, char **res, t_parser *parser, t_varli
 		join_free_for_word(res, cur->part);
 	else if (parser->input[cur->start_qt_input] == '"')
 	{
-		tmp = reg_dollar_sign(cur->part, head_var);
+		tmp = reg_dollar_sign(cur->part, head_var, parser);
 		join_free_for_word(res, tmp);
 		free(tmp);
 	}

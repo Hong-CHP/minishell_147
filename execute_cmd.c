@@ -138,8 +138,8 @@ void	execute_cmd(t_varlist **head_var, t_command *command, char **ev, t_parser *
 	exit_if_empty(command, &empty);
 	if (if_buildin(command->args[empty]))
 	{
-		g_exit_status = execute_builtin(head_var, command, ev, 1);
-		exit(g_exit_status);
+		*parser->g_exit_status = execute_builtin(head_var, command, ev, 1);
+		exit(*parser->g_exit_status);
 	}
 	if (if_slash(command->args[empty]) > 0)
 		slash_already_path(command, &empty, parser, &exe_path);
@@ -192,7 +192,7 @@ int		no_executable_if_invalid_in(t_command *cmd, t_parser *parser)
 	return (1);
 }
 
-void	build_in_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex **pipe_data)
+void	build_in_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex **pipe_data, t_parser *parser)
 {
 	int saved_stdin;
 	int saved_stdout;
@@ -209,7 +209,7 @@ void	build_in_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex **pipe_da
 	    dup2((*pipe_data)->f_fds[1], STDOUT_FILENO);
 	    close((*pipe_data)->f_fds[1]);
 	}
-	g_exit_status = execute_builtin(head_var, cmd, (*pipe_data)->envp, 0);
+	*parser->g_exit_status = execute_builtin(head_var, cmd, (*pipe_data)->envp, 0);
 	dup2(saved_stdout, STDOUT_FILENO);
 	dup2(saved_stdin, STDIN_FILENO);
 	close(saved_stdout);
@@ -239,7 +239,7 @@ int		executable_not_build_in(t_varlist **head_var, t_command *cmd, t_pipex *pipe
 		return (0);	
 	if (if_buildin(cmd->args[0]))
 	{
-		build_in_single_cmd(head_var, cmd, &pipe_data);
+		build_in_single_cmd(head_var, cmd, &pipe_data, parser);
 		return (0);
 	}
 	return (1);
@@ -248,16 +248,16 @@ int		executable_not_build_in(t_varlist **head_var, t_command *cmd, t_pipex *pipe
 void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser)
 {
 	pid_t	pid;
-	int		status;
+	// int		status;
 
 	if (!executable_not_build_in(head_var, cmd, pipe_data, parser))
 		return ;
 	pid = fork();
-	status = 0;
+	// status = 0;
 	if (pid < 0)
 	{
 		perror("fork failed");
-		g_exit_status = 1;
+		*parser->g_exit_status = 1;
 		return ;
 	}
 	if (pid == 0)
@@ -268,8 +268,10 @@ void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data
 	}
 	else
 	{
+		catch = 1;
 		// signal(SIGINT, SIG_IGN);
-		waitpid(pid, &status, 0);
-		update_exit_status(status);
+		// waitpid(pid, &status, 0);
+		// update_exit_status(status, parser);
+		*parser->g_exit_status = wait_child_process(pid);
 	}
 }

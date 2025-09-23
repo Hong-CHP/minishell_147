@@ -11,7 +11,7 @@
 # include <readline/history.h>
 # include <sys/wait.h>
 
-extern int g_exit_status;
+extern int catch;
 typedef struct s_cmdlist t_cmdlist;
 
 typedef enum e_tk_type 
@@ -46,6 +46,7 @@ typedef struct s_parser
 	size_t	pos;
 	bool	error;
 	char	*error_msg;
+	int		*g_exit_status;
 }				t_parser;
 
 typedef struct s_variable
@@ -122,11 +123,13 @@ typedef struct s_hd_limit
 	int		dollar;
 }				t_hd_limit;
 
-//readline_utils.c
-int		has_unclosed_quote(char *input);
 //minishell.c
-void	minishell(char *input, t_varlist **head_var, char **envp);
+void	minishell(char *input, t_varlist **head_var, char **envp, int *g_exit_status);
+// clean_all.c
+void	clean_all(t_cmdlist **head_cmd, t_parser *parser, t_pipex *pipe_data);
+void	free_parser(t_parser *parser);
 void	free_cmdlist(t_cmdlist **head_cmd);
+void	free_cmdlist_content(t_cmdlist **cur);
 //parsing.c
 t_cmdlist	*parse_cmd_line(t_parser *parser, t_varlist **head_var);
 t_cmdlist	*parse_pipeline(t_parser *parser, t_varlist **head_var);
@@ -137,7 +140,7 @@ void	add_cmdlist_back(t_cmdlist **head, t_cmdlist *cmd_node);
 void	clean_cmdlist(t_cmdlist **head);
 //var_list.c
 void	create_var_list(t_varlist **head, char *input, t_command *cmd_node);
-int		create_var_list_or_find_node(t_varlist **head, char *input, t_cmdlist **head_cmd, t_parser *parser);
+int		create_var_list_or_find_node(t_varlist **head, t_cmdlist **head_cmd, t_parser *parser);
 int		is_valide_varname(char *input);
 int		process_var_val_export(t_varlist **head, char *input, t_variable *var_node, t_command *cmd_node);
 //var_list_utils.c
@@ -184,20 +187,21 @@ char	*handler_end_single_quote_data(t_parser *parser, t_handler_qt *node, t_hand
 char	*handler_end_double_quote_data(t_parser *parser, t_handler_qt *node, t_handler_qt **handler, char *buf);
 t_handler_qt    *new_handler_node(int start, int pos_len);
 void    		add_handler_lst_back(t_handler_qt **handler, t_handler_qt *node);
-void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var);
+void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var, t_parser *parser);
 void    free_handler_lst(t_handler_qt **handler);
 void	join_free_for_word(char **res, char *str);
 char	*init_buf_for_extract(char **buf, t_parser *parser, t_handler_qt **handler);
 void	extract_word_front(t_handler_qt *cur, char **res, t_parser *parser, t_varlist **head_var);
 //dollar_sign.c
-char	*reg_dollar_sign(char *str, t_varlist **head_var);
-int		get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_var);
+char	**find_dollar_sign(char *str, char **vars);
+char	*reg_dollar_sign(char *str, t_varlist **head_var, t_parser *parser);
+int		get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_var, t_parser *parser);
 char	*fill_words_with_real_vals(char *str, char **vars, char **vals, int t_len);
 //dollar_sign_utils.c
 int		if_dollar_sign(char *str);
 int		is_varname_format(char *str);
 void	free_vars_vals(char **vars, char **vals);
-char	*replace_init_val_by_real_val(t_varlist **head_var, char ***vars, char ***vals, char *str);
+char	*replace_init_val_by_real_val(t_varlist **head_var, t_parser *parser, int nb_vars, char *str);
 //process_token.c
 int		is_cmd_token(int type);
 int		process_token(t_parser *p, t_cmdlist *cmd);
@@ -207,6 +211,7 @@ int		is_cmd_token(int type);
 int		set_error(t_parser *p, char *msg, int err_code);
 void	ft_put_err_msg(t_parser *parser, char *str, char *file_name);
 //pipex.c
+int		wait_child_process(pid_t last_pid);
 void	execute_pipeline(t_cmdlist **head_cmd, t_pipex *pipe_data, t_parser *parser);
 //pipex_utils.c
 int		pipe_fork_error(void);
@@ -226,7 +231,7 @@ int		builtin_export(t_varlist **head_var, t_command *cmd_node, int sub_process);
 void	execute_cmd(t_varlist **head_var, t_command *command, char **ev, t_parser *parser);
 void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser);
 //execute_cmd_utils.c
-void	update_exit_status(int status);
+void	update_exit_status(int status, t_parser *parser);
 int		if_slash(char *str);
 char	**find_sign_then_split(char *str);
 void	free_split(char **strs);
