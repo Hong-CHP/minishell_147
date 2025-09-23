@@ -43,35 +43,89 @@ char	*get_path_after_join(char **args, char **ev_path, int i)
 	return (path);
 }
 
+char *search_in_path(char **args, char **ev_path)
+{
+    int   i;
+    char *path;
+    char *exe_path;
+
+    exe_path = NULL;
+    i = 0;
+    while (ev_path[i])
+    {
+        path = get_path_after_join(args, ev_path, i);
+        if (path)
+        {
+            if (access(path, X_OK) == 0)
+            {
+                exe_path = ft_strdup(path);
+                free(path);
+                break;
+            }
+            free(path);
+        }
+        i++;
+    }
+    return (exe_path);
+}
+
 char	*find_exe_path(char **args, t_varlist **head_var)
 {
-	char	*path;
 	char	*exe_path;
 	char	**ev_path;
-	int		i;
 
 	exe_path = NULL;
 	ev_path = extract_path(head_var);
 	if (!ev_path)
 		return (NULL);
-	i = 0;
-	while (ev_path[i])
-	{
-		path = get_path_after_join(args, ev_path, i);
-		if (path)
-		{
-			if (access(path, X_OK) == 0)
-			{
-				exe_path = ft_strdup(path);
-				free(path);
-				break ;
-			}
-			free(path);
-		}
-		i++;
-	}
+	exe_path = search_in_path(args, ev_path);
 	free_split(ev_path);
 	return (exe_path);
+}
+
+void	exit_if_empty(t_command *command, int *empty)
+{
+	if (!command->cmd)
+		exit(0);
+	if (!command->args[0])
+	{
+		(*empty)++;
+		if (!command->args[*empty])
+			exit(0);
+	}	
+}
+
+void	path_exist_issue(t_command *command, int *empty, t_parser *parser, char *exe_path)
+{
+	if (if_slash(command->args[*empty]) > 0 && !exe_path)
+	{
+		set_error(parser, "No such file or directory", 127);
+		ft_put_err_msg(parser, NULL, command->args[*empty]);
+		exit(127);
+	}
+	if (!exe_path)
+	{
+		set_error(parser, "command not found", 127);
+		ft_put_err_msg(parser, NULL, command->args[*empty]);
+		exit (127);
+	}
+}
+
+void	slash_already_path(t_command *command, int *empty, t_parser *parser, char **exe_path)
+{
+	if (access(command->args[*empty], X_OK) == 0)
+	{
+		*exe_path = ft_strdup(command->args[*empty]);
+	}
+	else
+	{
+		if (access(command->args[*empty], F_OK) == 0)
+		{
+			set_error(parser, "Permission denied", 126);
+			ft_put_err_msg(parser, NULL, command->args[*empty]);
+			exit (126);
+		}
+	}
 }
 
 void	execute_cmd(t_varlist **head_var, t_command *command, char **ev, t_parser *parser)
@@ -81,47 +135,17 @@ void	execute_cmd(t_varlist **head_var, t_command *command, char **ev, t_parser *
 
 	exe_path = NULL;
 	empty = 0;
-	if (!command->cmd)
-		exit(0);
-	if (!command->args[0])
-	{
-		empty++;
-		if (!command->args[empty])
-			exit(0);
-	}
+	exit_if_empty(command, &empty);
 	if (if_buildin(command->args[empty]))
 	{
 		g_exit_status = execute_builtin(head_var, command, ev, 1);
 		exit(g_exit_status);
 	}
 	if (if_slash(command->args[empty]) > 0)
-	{
-		if (access(command->args[empty], X_OK) == 0)
-			exe_path = ft_strdup(command->args[empty]);
-		else
-		{
-			if (access(command->args[empty], F_OK) == 0)
-			{
-				set_error(parser, "Permission denied", 126);
-				ft_put_err_msg(parser, NULL, command->args[empty]);
-				exit (126);
-			}
-		}
-	}
+		slash_already_path(command, &empty, parser, &exe_path);
 	else
 		exe_path = find_exe_path(command->args, head_var);
-	if (if_slash(command->args[empty]) > 0 && !exe_path)
-	{
-		set_error(parser, "No such file or directory", 127);
-		ft_put_err_msg(parser, NULL, command->args[empty]);
-		exit(127);
-	}
-	if (!exe_path)
-	{
-		set_error(parser, "command not found", 127);
-		ft_put_err_msg(parser, NULL, command->args[empty]);
-		exit (127);
-	}
+	path_exist_issue(command, &empty, parser, exe_path);
 	if (exe_path)
 	{
 		execve(exe_path, command->args, ev);
@@ -132,23 +156,26 @@ void	execute_cmd(t_varlist **head_var, t_command *command, char **ev, t_parser *
 	}
 }
 
-void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser)
+int		no_executable_if_empty(t_command *cmd, t_parser *parser)
 {
-	pid_t pid;
-	int		status;
-	t_redir	*tmp;
-
 	if (!cmd)
-		return ;
+		return (0);
 	if (cmd->cmd && !*cmd->cmd)
-		return ;
+		return (0);
 	if (!cmd->args || !cmd->args[0])
-		return ;
+		return (0);
 	if (cmd->invalid_in)
 	{
 		ft_put_err_msg(parser, NULL, cmd->infile);
-		return ;
+		return (0);
 	}
+	return (1);
+}
+
+int		no_executable_if_invalid_in(t_command *cmd, t_parser *parser)
+{
+	t_redir	*tmp;
+
 	if (cmd->outfile)
 	{
 		tmp = cmd->outfile;
@@ -157,32 +184,74 @@ void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data
 			if (tmp->invalid)
 			{
 				ft_put_err_msg(parser, NULL, tmp->name);
-				return ;
+				return (0);
 			}
 			tmp = tmp->next;
 		}
 	}
+	return (1);
+}
+
+void	build_in_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex **pipe_data)
+{
+	int saved_stdin;
+	int saved_stdout;
+		
+	saved_stdout = dup(STDOUT_FILENO);
+	saved_stdin  = dup(STDIN_FILENO);
+	if ((*pipe_data)->f_fds[0] != -1)
+	{
+	    dup2((*pipe_data)->f_fds[0], STDIN_FILENO);
+	    close((*pipe_data)->f_fds[0]);
+	}
+	if ((*pipe_data)->f_fds[1] != -1)
+	{
+	    dup2((*pipe_data)->f_fds[1], STDOUT_FILENO);
+	    close((*pipe_data)->f_fds[1]);
+	}
+	g_exit_status = execute_builtin(head_var, cmd, (*pipe_data)->envp, 0);
+	dup2(saved_stdout, STDOUT_FILENO);
+	dup2(saved_stdin, STDIN_FILENO);
+	close(saved_stdout);
+	close(saved_stdin);
+	return ;
+}
+
+void	single_cmd_child_redir(t_pipex **pipe_data)
+{
+	if ((*pipe_data)->f_fds[0] != -1)
+	{
+		dup2((*pipe_data)->f_fds[0], 0);
+		close((*pipe_data)->f_fds[0]);
+	}
+	if ((*pipe_data)->f_fds[1] != -1)
+	{
+		dup2((*pipe_data)->f_fds[1], 1);
+		close((*pipe_data)->f_fds[1]);
+	}
+}
+
+int		executable_not_build_in(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser)
+{
+	if (!no_executable_if_empty(cmd, parser))
+		return (0);
+	if (!no_executable_if_invalid_in(cmd, parser))
+		return (0);	
 	if (if_buildin(cmd->args[0]))
 	{
-	    int saved_stdout = dup(STDOUT_FILENO);
-	    int saved_stdin  = dup(STDIN_FILENO);
-	    if (pipe_data->f_fds[0] != -1)
-	    {
-	        dup2(pipe_data->f_fds[0], STDIN_FILENO);
-	        close(pipe_data->f_fds[0]);
-	    }
-	    if (pipe_data->f_fds[1] != -1)
-	    {
-	        dup2(pipe_data->f_fds[1], STDOUT_FILENO);
-	        close(pipe_data->f_fds[1]);
-	    }
-	    g_exit_status = execute_builtin(head_var, cmd, pipe_data->envp, 0);
-	    dup2(saved_stdout, STDOUT_FILENO);
-	    dup2(saved_stdin, STDIN_FILENO);
-	    close(saved_stdout);
-	    close(saved_stdin);
-	    return ;
+		build_in_single_cmd(head_var, cmd, &pipe_data);
+		return (0);
 	}
+	return (1);
+}
+
+void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser)
+{
+	pid_t	pid;
+	int		status;
+
+	if (!executable_not_build_in(head_var, cmd, pipe_data, parser))
+		return ;
 	pid = fork();
 	status = 0;
 	if (pid < 0)
@@ -194,16 +263,7 @@ void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data
 	if (pid == 0)
 	{
 		// signal(SIGINT, SIG_DFL);
-		if (pipe_data->f_fds[0] != -1)
-		{
-			dup2(pipe_data->f_fds[0], 0);
-			close(pipe_data->f_fds[0]);
-		}
-		if (pipe_data->f_fds[1] != -1)
-		{
-			dup2(pipe_data->f_fds[1], 1);
-			close(pipe_data->f_fds[1]);
-		}
+		single_cmd_child_redir(&pipe_data);
 		execute_cmd(head_var, cmd, pipe_data->envp, parser);
 	}
 	else

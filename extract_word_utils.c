@@ -1,7 +1,48 @@
 #include "minishell.h"
 #include "libft.h"
 
-t_handler_qt	*new_handler_node(int start)
+char	*handler_end_single_quote_data(t_parser *parser, t_handler_qt *node, t_handler_qt **handler, char *buf)
+{
+	node->end_qt_input = parser->pos;
+	if (parser->input[parser->pos] == '\'' || parser->input[parser->pos] == '"')
+	{
+		node->part = ft_substr(parser->input, node->start_qt_input + 1, node->end_qt_input - node->start_qt_input - 1);
+		if (!node->part)
+			node->part = ft_strdup("\n");
+		parser->pos++;
+		add_handler_lst_back(handler, node);
+		return (buf);
+	}
+	else
+	{
+		free(node);
+		set_error(parser, "unclosed quote", 1);
+		return (NULL);
+	}
+}
+
+char	*handler_end_double_quote_data(t_parser *parser, t_handler_qt *node, t_handler_qt **handler, char *buf)
+{
+	node->end_qt_input = parser->pos;
+	if (parser->input[parser->pos] == '"')
+	{
+		node->part = ft_substr(parser->input, node->start_qt_input + 1, node->end_qt_input - node->start_qt_input - 1);
+		if (!node->part)
+			node->part = ft_strdup("\n");
+		parser->pos++;
+		add_handler_lst_back(handler, node);
+		return (buf);
+	}
+	else if (!parser->input[parser->pos])
+	{
+		free(node);
+		set_error(parser, "incorrect syntaxe", 1);
+		return (NULL);
+	}
+	return (buf);
+}
+
+t_handler_qt	*new_handler_node(int start, int pos_len)
 {
 	t_handler_qt	*node;
 
@@ -11,7 +52,7 @@ t_handler_qt	*new_handler_node(int start)
 	ft_memset(node, 0, sizeof(t_handler_qt));
 	node->start_qt_input = start;
 	node->end_qt_input = 0;
-	node->start_qt_buf = 0;
+	node->start_qt_buf = pos_len;
 	node->end_qt_buf = 0;
 	node->dollar = 0;
 	node->part = NULL;
@@ -84,7 +125,10 @@ char	*init_buf_for_extract(char **buf, t_parser *parser, t_handler_qt **handler)
 		return (NULL);
 	ft_memset(*buf, 0, sizeof(char) * (ft_strlen(parser->input) + 1));
 	if (!extract_by_type_sign(*buf, parser, handler))
+	{
+		free(*buf);
 		return (NULL);
+	}
 	return (*buf);
 }
 

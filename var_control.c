@@ -1,6 +1,34 @@
 #include "minishell.h"
 #include "libft.h"
 
+void	split_space_in_val(char *input, char *val)
+{
+	int		j;
+	char	*join;
+	char	*tmp;
+	char	**split_word;
+	
+	j = 0;
+	join = ft_strdup("");
+	split_word = ft_split(input, ' ');
+	while (split_word[j])
+	{
+		tmp = ft_strjoin(join, split_word[j]);
+		free(join);
+		join = tmp;
+		if (split_word[j + 1])
+		{
+			tmp = ft_strjoin(join, " ");
+			free(join);
+			join = tmp;
+		}
+		j++;
+	}
+	free_split(split_word);
+	ft_strlcpy(val, join, (ft_strlen(join) + 1));
+	free(join);
+}
+
 char	**if_val_after_equal(char *input, int i, char **val)
 {
 	int		count_val;
@@ -23,7 +51,6 @@ char	**if_val_after_equal(char *input, int i, char **val)
 char	*if_variable_val(char *input)
 {
 	char	*val;
-
 	int		i;
 
 	i = 0;
@@ -58,7 +85,32 @@ int	is_valide_varname(char *input)
 	while (input[i] && input[i] != '=')
 	{
 		if (!ft_isalnum(input[i]) && input[i] != '_' && input[i] != '$')
+		{
 			return (0);
+		}
+		i++;
+	}
+	return (1);
+}
+
+int	is_valide_varname_for_export(char *input, t_varlist **head, t_command *cmd_node)
+{
+	int i;
+	
+	if (!input)
+		return (0);
+	if (!input[0] && cmd_node->cmd[7] == '$')
+	{
+		print_all_variable_in_list(head);
+		return (1);
+	}
+	if (!ft_isalpha(input[0]) && input[0] != '_' && input[0] != '$')
+		return (0);
+	i = 1;
+	while (input[i] && input[i] != '=')
+	{
+		if (!ft_isalnum(input[i]) && input[i] != '_' && input[i] != '$')
+				return (0);
 		i++;
 	}
 	return (1);

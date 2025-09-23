@@ -21,7 +21,10 @@ int	handle_word(t_parser *p, char **args, int *argc)
 			if (!args[*argc])
 				return (1);
 			if (!*args[*argc])
+			{
+				(*argc)++;
 				return (0);
+			}
 			(*argc)++;
 			i++;
 		}
@@ -33,7 +36,15 @@ int	handle_word(t_parser *p, char **args, int *argc)
 		if (!args[*argc])
 			return (1);
 		if (!*args[*argc])
+		{
+			if (p->current->value[0] == '\0' && *argc == 0)
+			{
+				free(args[*argc]);
+				return (0);
+			}
+			(*argc)++;
 			return (0);
+		}
 		(*argc)++;
 	}
 	return (0);
@@ -49,14 +60,8 @@ int		handle_infile(t_parser *p, t_cmdlist *node)
 	node->command->infile = ft_strdup(p->current->value);
 	if (!node->command->infile)
 		return (1);
-	// printf("checking permission\n");
 	if (check_infile_permission(p, node->command->infile) != 0)
-	{
-		// free(node->command->infile);
-		// return (1);
-		// printf("invalid_in = 1\n");
 		node->command->invalid_in = 1;
-	}
 	return (0);
 }
 
@@ -73,6 +78,8 @@ int		handle_outfile(t_parser *p, t_cmdlist *node, int append)
 		return (1);
 	new->name = ft_strdup(p->current->value);
 	new->invalid = 0;
+	if (check_outfile_permission(p, new->name) != 0)
+		new->invalid = 1;
 	new->append = append;
 	new->next = NULL;
 	if (!node->command->outfile)
@@ -83,14 +90,6 @@ int		handle_outfile(t_parser *p, t_cmdlist *node, int append)
 		while (cur->next)
 			cur = cur->next;
 		cur->next = new;
-	}
-	// printf("checking permission\n");
-	if (check_outfile_permission(p, new->name) != 0)
-	{
-		// free(node->command->outfile);
-		// return (1);
-		// printf("invalid outfile = 1\n");
-		new->invalid = 1;
 	}
 	return (0);
 }

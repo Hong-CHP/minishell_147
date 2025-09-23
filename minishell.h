@@ -126,6 +126,7 @@ typedef struct s_hd_limit
 int		has_unclosed_quote(char *input);
 //minishell.c
 void	minishell(char *input, t_varlist **head_var, char **envp);
+void	free_cmdlist(t_cmdlist **head_cmd);
 //parsing.c
 t_cmdlist	*parse_cmd_line(t_parser *parser, t_varlist **head_var);
 t_cmdlist	*parse_pipeline(t_parser *parser, t_varlist **head_var);
@@ -136,7 +137,7 @@ void	add_cmdlist_back(t_cmdlist **head, t_cmdlist *cmd_node);
 void	clean_cmdlist(t_cmdlist **head);
 //var_list.c
 void	create_var_list(t_varlist **head, char *input, t_command *cmd_node);
-int		create_var_list_or_find_node(t_varlist **head, char *input, t_cmdlist **head_cmd);
+int		create_var_list_or_find_node(t_varlist **head, char *input, t_cmdlist **head_cmd, t_parser *parser);
 int		is_valide_varname(char *input);
 int		process_var_val_export(t_varlist **head, char *input, t_variable *var_node, t_command *cmd_node);
 //var_list_utils.c
@@ -148,13 +149,15 @@ void	add_var_lst_back(t_varlist **head, t_varlist *var_node);
 //var_control.c
 char	*if_variable_var(char *input);
 char	*if_variable_val(char *input);
+void	split_space_in_val(char *input, char *val);
+int		is_valide_varname_for_export(char *input, t_varlist **head, t_command *cmd_node);
 //tokenize_utils.c
 int		if_quote(char *str);
 void	free_token_list(t_token **head);
 char	*extract_value_if_sign(char *value, t_varlist **head_var);
 //var_val.c
 void	fill_variable_value(char *content, char *var, char *val);
-int 	init_registre_variable(t_variable *var_dt, char *input, t_varlist **head_var);
+int 	init_registre_variable(t_variable *var_dt, char *input);
 char	*extract_value(char *val, t_varlist **head_var);
 //extract_cmd_utils.c
 int		if_slash_trans(char *str);
@@ -173,11 +176,13 @@ t_token	*create_output_token(t_parser *parser);
 t_token	*create_and_token(t_parser *parser);
 t_token	*create_simple_token(t_parser *parser, int type, const char *s);
 //extract_word.c
-char	*extract_word(t_parser *parser, t_varlist **head_var);
+char	*extract_word(t_parser *parser, t_varlist **head_var, int *last_pos, char **res);
 char	*extract_by_type_sign(char *buf, t_parser *parser, t_handler_qt **handler);
 int				if_still_space(char *res);
 //extract_word_utils.c
-t_handler_qt    *new_handler_node(int start);
+char	*handler_end_single_quote_data(t_parser *parser, t_handler_qt *node, t_handler_qt **handler, char *buf);
+char	*handler_end_double_quote_data(t_parser *parser, t_handler_qt *node, t_handler_qt **handler, char *buf);
+t_handler_qt    *new_handler_node(int start, int pos_len);
 void    		add_handler_lst_back(t_handler_qt **handler, t_handler_qt *node);
 void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var);
 void    free_handler_lst(t_handler_qt **handler);
@@ -186,10 +191,13 @@ char	*init_buf_for_extract(char **buf, t_parser *parser, t_handler_qt **handler)
 void	extract_word_front(t_handler_qt *cur, char **res, t_parser *parser, t_varlist **head_var);
 //dollar_sign.c
 char	*reg_dollar_sign(char *str, t_varlist **head_var);
+int		get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_var);
+char	*fill_words_with_real_vals(char *str, char **vars, char **vals, int t_len);
 //dollar_sign_utils.c
 int		if_dollar_sign(char *str);
 int		is_varname_format(char *str);
 void	free_vars_vals(char **vars, char **vals);
+char	*replace_init_val_by_real_val(t_varlist **head_var, char ***vars, char ***vals, char *str);
 //process_token.c
 int		is_cmd_token(int type);
 int		process_token(t_parser *p, t_cmdlist *cmd);
@@ -201,8 +209,10 @@ void	ft_put_err_msg(t_parser *parser, char *str, char *file_name);
 //pipex.c
 void	execute_pipeline(t_cmdlist **head_cmd, t_pipex *pipe_data, t_parser *parser);
 //pipex_utils.c
+int		pipe_fork_error(void);
+void	free_redir(t_redir **head);
 int		if_pipex(t_cmdlist **head_cmd);
-t_pipex	*init_pipe_data(t_pipex *pipe_data, char **envp);
+t_pipex	*init_pipe_data(char **envp);
 int		get_in_out_files_fd(t_cmdlist **head, t_pipex *pipe_data, t_parser *parser);
 int		invalide_syntaxe_token(t_parser *parser, t_token *tokens);
 //checker_files_access.c
@@ -221,7 +231,7 @@ int		if_slash(char *str);
 char	**find_sign_then_split(char *str);
 void	free_split(char **strs);
 //execute_here_doc.c
-int		execute_here_doc(t_cmdlist **head_cmd, t_pipex *pipe_data);
+int		execute_here_doc(t_cmdlist **head_cmd, t_pipex *pipe_data, t_parser *parser);
 //get_next_line.c
 char	*get_next_line(int fd);
 //count_size_of_envp.c
@@ -232,11 +242,22 @@ int		count_size_of_envp(char **envp);
 void	print_all_variable_in_list(t_varlist **head);
 //build_in_cmd.c
 int		builtin_echo(t_command *cmd);
-int		builtin_cd(t_command *cmd);
+int		builtin_cd(t_command *cmd, t_varlist **head);
 int		builtin_pwd(void);
 int		builtin_env(char **ev, t_varlist **head);
 int		builtin_exit(t_command *cmd);
 // here_doc_limit.c
 char	*get_heredoc_limit(char *input, int *move);
+// build_in_utils.c
+int		put_export_err_msg(t_command *cmd_node);
+t_varlist	*create_export_list(t_varlist **export_head, t_varlist **head);
+int		get_cd_path(t_command *cmd, char **path, t_varlist **head);
+void	put_echo_content(t_command *cmd, int *i);
+int		check_echo_n_in_args(char *str);
+// build_in_utils_second.c
+int		get_cd_home_path(char **path, t_varlist **head);
+int		check_cd_path_err(char *path);
+void	unset_variable_from_list(t_varlist **head_var, t_varlist **cur, t_varlist **prev);
+int		put_exit_err_msg(void);
 
 #endif

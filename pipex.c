@@ -1,15 +1,16 @@
 #include "minishell.h"
 #include "libft.h"
 
-void	child_process(t_cmdlist **head_cmd, t_cmdlist *cur, t_pipex *pipe_data, t_parser *parser)
+void	child_process_redir_in(t_cmdlist *cur, t_pipex *pipe_data)
 {
 	int	infd;
-	int	outfd;
-	t_redir	*tmp;
 
-	if (cur->command->invalid_in)
-		exit(1);
-	if (cur->command->infile)
+	if (cur->command->here_doc == 1)
+	{
+		dup2(pipe_data->f_fds[0], STDIN_FILENO);
+		close(pipe_data->f_fds[0]);
+	}
+	else if (cur->command->infile)
 	{
 		infd = open(cur->command->infile, O_RDONLY);
 		if (infd < 0)
@@ -17,46 +18,51 @@ void	child_process(t_cmdlist **head_cmd, t_cmdlist *cur, t_pipex *pipe_data, t_p
 		dup2(infd, STDIN_FILENO);
 		close(infd);
 	}
-	//else if (cur == *head_cmd && pipe_data->f_fds[0] != -1)
-	// {
-	// 	dup2(pipe_data->f_fds[0], 0);
-	// 	close(pipe_data->f_fds[0]);
-	// }
 	else if (pipe_data->prev_pipe != -1)
 	{
 		dup2(pipe_data->prev_pipe, 0);
 		close(pipe_data->prev_pipe);
 	}
-	if (cur->command->outfile)
+}
+
+void	child_process_redir_out(t_cmdlist *cur, t_pipex *pipe_data)
+{
+	int		outfd;
+	t_redir	*tmp;
+
+	tmp = cur->command->outfile;
+	while (tmp->next)
 	{
-		tmp = cur->command->outfile;
-		while (tmp->next)
-		{
-			if (tmp->invalid)
-				exit(1);
-			tmp = tmp->next;
-		}
 		if (tmp->invalid)
 			exit(1);
-		if (tmp->append)
-			outfd = open(tmp->name, O_WRONLY | O_CREAT | O_APPEND, 0644);
-		else
-			outfd = open(tmp->name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		if (outfd < 0)
-			exit(1);
-		dup2(outfd, STDOUT_FILENO);
-		close(outfd);
-		if (cur->next == NULL && pipe_data->pipefd[1] != -1)
-		{
-			// dup2(pipe_data->f_fds[1], 1);
-			close(pipe_data->pipefd[1]);
-		}
+		tmp = tmp->next;
 	}
-	// else if (cur->next == NULL && pipe_data->f_fds[1] != -1)
-	// {
-	// 	dup2(pipe_data->f_fds[1], 1);
-	// 	close(pipe_data->f_fds[1]);
-	// }
+	if (tmp->invalid)
+		exit(1);
+	if (tmp->append)
+		outfd = open(tmp->name, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	else
+		outfd = open(tmp->name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (outfd < 0)
+		exit(1);
+	dup2(outfd, STDOUT_FILENO);
+	close(outfd);
+	if (cur->next == NULL && pipe_data->pipefd[1] != -1)
+		close(pipe_data->pipefd[1]);
+}
+
+void	child_process(t_cmdlist **head_cmd, t_cmdlist *cur, t_pipex *pipe_data, t_parser *parser)
+{
+	if (cur->command->invalid_in)
+		exit(1);
+	child_process_redir_in(cur, pipe_data);
+	if (cur->command->here_doc == 1)
+	{
+		dup2(pipe_data->f_fds[1], STDOUT_FILENO);
+		close(pipe_data->f_fds[1]);
+	}
+	else if (cur->command->outfile)
+		child_process_redir_out(cur, pipe_data);
 	else if (cur->next != NULL)
 	{
 		dup2(pipe_data->pipefd[1], 1);
@@ -90,17 +96,11 @@ pid_t	fork_and_pid(t_cmdlist **head_cmd, t_cmdlist *cur, t_pipex *pipe_data, t_p
 	if (cur->next != NULL)
 	{
 		if (pipe(pipe_data->pipefd) == -1)
-		{
-			perror("pipe");
-			return (-1);
-		}
+			return (pipe_fork_error());
 	}
 	pid = fork();
 	if (pid < 0)
-	{
-		perror("pipe");
-		return (-1);
-	}
+		return (pipe_fork_error());
 	if (pid == 0)
 	{
 		signal(SIGINT, SIG_DFL);

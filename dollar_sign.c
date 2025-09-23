@@ -35,7 +35,6 @@ char	*fill_multi_vars(char *str, int i)
 	int		pos_after_dollar;
 	int		j;
 	char	*var;
-	// int		len;
 	int		var_len;
 
 	j = i + 1;
@@ -44,33 +43,26 @@ char	*fill_multi_vars(char *str, int i)
 	var_len = is_varname_format(str + j);
 	if (!var_len)
 		return (NULL);
-	// printf("var len is %d\n", var_len);
 	if (str[j] == '{')
 		pos_after_dollar = j + 1;
 	else
 		pos_after_dollar = j;
-	// len = calc_pos_length_of_var(str, j, &pos_after_dollar);
 	var = ft_substr(str, pos_after_dollar, var_len);
 	return (var);
 }
 
-char	**find_dollar_sign(char *str, int nb_var)
+//  && (ft_isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?'
+// 	|| (str[i + 1] == '{' && str[i + 2] == '?' && str[i + 3] == '}')))
+char	**find_dollar_sign(char *str, char **vars)
 {
 	int		i;
 	int		k;
-	char	**vars;
 
-	vars = malloc(sizeof(char *) * (nb_var + 1));
-	if (!vars)
-		return (NULL);
 	i = 0;
 	k = 0;
 	while(str[i])
 	{
 		if (str[i] == '$' && str[i + 1])
-		//  && 
-		// 	(ft_isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?'
-		// 	|| (str[i + 1] == '{' && str[i + 2] == '?' && str[i + 3] == '}')))
 		{
 			if (str[i + 1] >= '0' && str[i + 1] <= '9')
 				vars[k] = ft_substr(str, i + 1, 1);
@@ -80,8 +72,6 @@ char	**find_dollar_sign(char *str, int nb_var)
 				if (!vars[k])
 					free_vars_vals(vars, NULL);
 			}
-			// if (vars[k])
-			// 	printf("vars[k] is %s\n", vars[k]);
 			k++;
 		}
 		i++;
@@ -137,69 +127,30 @@ int    get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **hea
     return (t_len);
 }
 
-void    fill_words_with_real_vals(char *word, char *str, char **vars, char **vals, int t_len)
-{
-    int i;
-    int j;
-    int k;
-    int o;
-    
-    i = 0;
-    k = 0;
-    j = 0;
-    while(j < t_len)
-    {
-        if (str[i] == '$' && str[i + 1] && str[i + 1] != '$')
-        {
-            i++;
-			if (str[i] == '{')
-				i++;
-			if (vars[k])
-			{
-				o = 0;
-				while(vals[k][o])
-					word[j++] = vals[k][o++];
-				i += ft_strlen(vars[k]);
-				if (str[i] == '}')
-					i++;
-				k++;
-			}
-			else
-				word[j++] = '$';
-        }
-        else
-            word[j++] = str[i++];
-    }
-    word[j] = '\0';
-}
-
 char	*reg_dollar_sign(char *str, t_varlist **head_var)
 {
 	int		nb_vars;
 	char	**vars;
 	char	*word;
 	char	**vals;
-	int		t_len;
 
 	word = NULL;
 	nb_vars = if_dollar_sign(str);
 	if (nb_vars == 0)
 		return (ft_strdup(str));
-	vars = find_dollar_sign(str, nb_vars);
+	vars = malloc(sizeof(char *) * (nb_vars + 1));
+	if (!vars)
+		return (NULL);
+	find_dollar_sign(str, vars);
 	vals = malloc(sizeof(char *) * (nb_vars + 1));
 	if (!vals)
 	{
 		free_vars_vals(vars, vals);
 		return (NULL);
 	}
-	t_len = get_vals_and_tot_len(str, vals, vars, head_var);
-	word = malloc(sizeof(char) * (t_len + 1));
+	word = replace_init_val_by_real_val(head_var, &vars, &vals, str);
 	if (!word)
-	{
-		free_vars_vals(vars, vals);
 		return (NULL);
-	}
-	fill_words_with_real_vals(word, str, vars, vals, t_len);
 	free_vars_vals(vars, vals);
 	return (word);
 }

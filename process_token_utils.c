@@ -24,7 +24,10 @@ void	ft_put_err_msg(t_parser *parser, char *str, char *file_name)
 int	set_error(t_parser *p, char *msg, int err_code)
 {
 	if (p->error_msg)
+	{
 		free(p->error_msg);
+		p->error_msg = NULL;
+	}
 	p->error = 1;
 	p->error_msg = ft_strdup(msg);
 	g_exit_status = err_code;

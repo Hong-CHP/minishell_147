@@ -15,61 +15,52 @@ void	fill_variable_value(char *content, char *var, char *val)
 	var[i] = '\0';
 	if (content[i] && content[i] == '=')
 		i++;
-	j = 0;
-	while (content[i])
-	{
-		val[j] = content[i];
-		j++;
-		i++;
-	}
-	val[j] = '\0';
-}
-
-char	*extract_value(char *val, t_varlist **head_var)
-{
-	char	*value;
-
-	value = extract_value_if_sign(val, head_var);
-	if (!value)
-		return (NULL);
-	return (value);
-}
-
-t_variable	*registre_var_val(char *input, t_variable *var_dt, char *value, t_varlist **head_var)
-{
-	int		ch;
-	char	*tmp;
-
-	if (var_dt->exported == 1)
-		fill_variable_value(&input[7], var_dt->var, var_dt->val);
+	if (if_still_space(&content[i]))
+		split_space_in_val(&content[i], val);
 	else
-		fill_variable_value(input, var_dt->var, var_dt->val);
-	ch = if_quote(var_dt->val);
-	if (if_dollar_sign(var_dt->val) > 0 && ch == 0)
 	{
-		tmp = var_dt->val;
-		var_dt->val = reg_dollar_sign(tmp, head_var);
-		free(tmp);
-	}
-	if (ch == -1)
-	{
-		printf("unclose quote\n");
-		free(var_dt->val);
-		return (NULL);
-	}
-	if (ch != 0)
-	{
-		value = extract_value(var_dt->val, head_var);
-		if (!value)
+		j = 0;
+		while (content[i])
 		{
-			free(var_dt->val);
-			return (NULL);
-		}	
-		free(var_dt->val);
-		var_dt->val = value;
+			val[j] = content[i];
+			j++;
+			i++;
+		}
+		val[j] = '\0';
 	}
-	return (var_dt);
 }
+
+// char	*extract_value(char *val, t_varlist **head_var)
+// {
+// 	char	*value;
+
+// 	value = extract_value_if_sign(val, head_var);
+// 	if (!value)
+// 		return (NULL);
+// 	return (value);
+// }
+
+// t_variable	*registre_var_val(char *input, t_variable *var_dt, char *value, t_varlist **head_var)
+// {
+// 	int		ch;
+// 	// char	*tmp;
+// 	(void)value;
+// 	(void)head_var;
+
+
+// 	if (var_dt->exported == 1)
+// 		fill_variable_value(&input[7], var_dt->var, var_dt->val);
+// 	else
+// 		fill_variable_value(input, var_dt->var, var_dt->val);
+// 	ch = if_quote(var_dt->val);
+// 	if (ch == -1)
+// 	{
+// 		printf("unclose quote\n");
+// 		free(var_dt->val);
+// 		return (NULL);
+// 	}
+// 	return (var_dt);
+// }
 
 t_variable	*verify_and_init_var_val(char *input, t_variable *var_dt)
 {
@@ -88,16 +79,25 @@ t_variable	*verify_and_init_var_val(char *input, t_variable *var_dt)
 	return (var_dt);
 }
 
-int 	init_registre_variable(t_variable *var_dt, char *input, t_varlist **head_var)
+int 	init_registre_variable(t_variable *var_dt, char *input)
 {
-	char	*value;
+	int		ch;
 
-	value = NULL;
 	if (if_export_variable(input))
 		var_dt->exported = 1;
 	if (!verify_and_init_var_val(input, var_dt))
 		return (0);
-	if (!registre_var_val(input, var_dt, value, head_var))
+	if (var_dt->exported == 1)
+		fill_variable_value(&input[7], var_dt->var, var_dt->val);
+	else
+		fill_variable_value(input, var_dt->var, var_dt->val);
+	ch = if_quote(var_dt->val);
+	if (ch == -1)
+	{
+		printf("unclose quote\n");
+		free(var_dt->var);
+		free(var_dt->val);
 		return (0);
+	}
 	return (1);
 }

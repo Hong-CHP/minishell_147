@@ -52,6 +52,7 @@ void	read_the_line(char *input, t_varlist **head_var, char **envp)
 	}
 }
 
+// minishell fill_word_with_real_val extract_word handle_word process_var_val_export
 int	main(int argc, char **argv, char **envp)
 {
 	char		*input;

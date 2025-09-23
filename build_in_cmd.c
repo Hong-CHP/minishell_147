@@ -1,40 +1,24 @@
 #include "minishell.h"
 #include "libft.h"
 
-int		builtin_cd(t_command *cmd)
+int		builtin_cd(t_command *cmd, t_varlist **head)
 {
 	char	*path;
-	char	*home;
 
 	if (cmd->argc > 2)
 	{
 		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
 		return (1);
 	}
-	if (cmd->argc == 1)
-	{
-		home = getenv("HOME");
-		if (!home)
-		{
-			ft_putstr_fd("minishell: cd: HOME not set\n", 2);
-			return (1);
-		}
-		path = home;
-	}
-	else
-		path = cmd->args[1];
-	if (chdir(path) == -1)
-	{
-		ft_putstr_fd("cd: ", 2);
-		ft_putstr_fd(path, 2);
-		if (access(path, F_OK) == 0 && access(path, R_OK) == -1)
-		{
-			ft_putstr_fd(": Permission denied\n", 2);
-			return (1);
-		}
-		ft_putstr_fd(": No such file or directory\n", 2);
+	if (get_cd_path(cmd, &path, head) != 0)
 		return (1);
+	if (path && cmd->args[1] && !cmd->args[1][0] && cmd->cmd[3] != '$')
+	{
+		free(path);
+		return (0);
 	}
+	if (chdir(path) == -1)
+		return (check_cd_path_err(path));
 	return (0);
 }
 
@@ -91,36 +75,13 @@ int		builtin_exit(t_command *cmd)
 			if (cmd->args[1][i] == '+' || cmd->args[1][i] == '-')
 				i++;
 			if (!(cmd->args[1][i] >= '0' && cmd->args[1][i] <= '9'))
-			{
-				ft_putstr_fd("minishell: exit: numeric argument required\n", 2);
-				return (2);
-			}
+				return (put_exit_err_msg());
 			i++;
 		}
 		exit_code = ft_atoi(cmd->args[1]);
 	}
 	ft_putstr_fd("exit\n", 1);
 	exit(exit_code);
-}
-
-int		check_echo_n_in_args(char *str)
-{
-	int	i;
-
-	if (ft_strncmp(str, "-n", 2) == 0)
-		i = 2;
-	else
-		i = 0;
-	while (str[i])
-	{
-		if (str[i] != 'n')
-		{
-			printf("catch: %c\n", str[i]);
-			return (0);
-		}
-		i++;
-	}
-	return (1);
 }
 
 int		builtin_echo(t_command *cmd)
@@ -133,21 +94,9 @@ int		builtin_echo(t_command *cmd)
 	while (i < cmd->argc)
 	{
 		if (ft_strncmp(cmd->args[i], "-n", 2) != 0)
-		{
-			while (cmd->args[i])
-			{
-				ft_putstr_fd(cmd->args[i], 1);
-				if (i < cmd->argc - 1)
-					ft_putstr_fd(" ", 1);
-				i++;
-			}
-		}
+			put_echo_content(cmd, &i);
 		else if (ft_strncmp(cmd->args[i], "-n", 2) == 0 && !check_echo_n_in_args(cmd->args[i]))
-		{
-			ft_putstr_fd(cmd->args[i], 1);
-			if (i < cmd->argc - 1)
-				ft_putstr_fd(" ", 1);
-		}
+			put_echo_content(cmd, &i);
 		else
 			newline = 0;
 		i++;

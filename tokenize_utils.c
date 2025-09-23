@@ -31,7 +31,7 @@ void	free_token_list(t_token **head)
 	t_token	*next;
 
 	cur = *head;
-	while (cur && cur->next)
+	while (cur)
 	{
 		next = cur->next;
 		if (cur->value)
@@ -42,147 +42,147 @@ void	free_token_list(t_token **head)
 	*head = NULL;
 }
 
-char	*extract_exit_code(char *str)
-{
-	char	*exit_code;
-	int		first_len;
-	char	*first;
-	char	*tmp;
-	int		last_len;
-	char	*last;
+// char	*extract_exit_code(char *str)
+// {
+// 	char	*exit_code;
+// 	int		first_len;
+// 	char	*first;
+// 	char	*tmp;
+// 	int		last_len;
+// 	char	*last;
 	
-	exit_code = ft_strdup("");
-	first_len = ft_strnstr(str, "$?", ft_strlen(str)) - str;
-	first = ft_substr(str, 0, first_len);
-	exit_code = ft_strjoin(exit_code, first);
-	tmp = ft_itoa(g_exit_status);
-	exit_code = ft_strjoin(exit_code, tmp);
-	last_len = ft_strlen(str) - first_len + 2;
-	last = ft_substr(str, first_len + 2, last_len);
-	exit_code = ft_strjoin(exit_code, last);
-	free(str);
-	str = exit_code;
-	free(first);
-	free(last);
-	return (str);
-}
+// 	exit_code = ft_strdup("");
+// 	first_len = ft_strnstr(str, "$?", ft_strlen(str)) - str;
+// 	first = ft_substr(str, 0, first_len);
+// 	exit_code = ft_strjoin(exit_code, first);
+// 	tmp = ft_itoa(g_exit_status);
+// 	exit_code = ft_strjoin(exit_code, tmp);
+// 	last_len = ft_strlen(str) - first_len + 2;
+// 	last = ft_substr(str, first_len + 2, last_len);
+// 	exit_code = ft_strjoin(exit_code, last);
+// 	free(str);
+// 	str = exit_code;
+// 	free(first);
+// 	free(last);
+// 	return (str);
+// }
 
-char	*extract_value_if_sign(char *value, t_varlist **head_var)
-{
-	char	*buf;
-	int		i;
-	int		j;
-	int		len;
-	int		state;
-	char	*tmp;
-	char	*expanded;
-	(void)head_var;
+// char	*extract_value_if_sign(char *value, t_varlist **head_var)
+// {
+// 	char	*buf;
+// 	int		i;
+// 	int		j;
+// 	int		len;
+// 	int		state;
+// 	char	*tmp;
+// 	char	*expanded;
+// 	(void)head_var;
 
-	buf = malloc(sizeof(char) * (ft_strlen(value) * 2 + 1));
-	if (!buf)
-		return (NULL);
-	len = 0;
-	i = 0;
-	state = 0;
-	while (value[i])
-	{
-		if (state == 0)
-		{
-			if (value[i] == '\'')
-			{
-				state = 1;
-				i++;
-			}
-			else if (value[i] == '\"')
-			{
-				state = 2;
-				i++;
-			}
-			else if (value[i] == '$')
-			{
-				int k = i;
-				j = 0;
-				tmp = malloc(sizeof(char) * (ft_strlen(value) * 2 + 1));
-				if (!tmp)
-					return (NULL);
-				while (value[k] && value[k] != '\'' && value[k] != '"')
-					tmp[j++] = value[k++];
-				tmp[j] = '\0';
-				expanded = reg_dollar_sign(tmp, head_var);
-				if (!expanded)
-					expanded = ft_strdup("");
-				ft_memcpy(buf + len, expanded, ft_strlen(expanded));
-				len += ft_strlen(expanded);
-				i += ft_strlen(tmp);
-				free(expanded);
-				free(tmp);
-			}
-			else if (value[i] == '\\')
-			{
-				i++;
-				if (value[i])
-					buf[len++] = value[i++];
-				else
-				{
-					printf("incorrect syntaxe\n");
-					free(buf);
-					return (NULL);
-				}
-			}
-			else
-				buf[len++] = value[i++];
-		}
-		else if (state == 1)
-		{
-			if (value[i] == '\'')
-			{
-				state = 0;
-				i++;
-			}
-			else
-				buf[len++] = value[i++];
-		}
-		else if (state == 2)
-		{
-			if (value[i] == '"')
-			{
-				state = 0;
-				i++;
-			}
-			else if (value[i] == '\\' &&
-						(value[i + 1] == '\\' || value[i + 1] == '$' || value[i + 1] == '\"'))
-			{
-				i++;
-				buf[len++] = value[i++];
-			}
-			else if (value[i] == '$')
-			{
-				int k = i;
-				j = 0;
-				tmp = malloc(sizeof(char) * (ft_strlen(value) * 2 + 1));
-				if (!tmp)
-					return (NULL);
-				while (value[k] && value[k] != '\'' && value[k] != '"')
-					tmp[j++] = value[k++];
-				tmp[j] = '\0';
-				expanded = reg_dollar_sign(tmp, head_var);
-				if (!expanded)
-					expanded = ft_strdup("");
-				ft_memcpy(buf + len, expanded, ft_strlen(expanded));
-				len += ft_strlen(expanded);
-				i += ft_strlen(tmp);
-				// while (value[i] && (ft_isalnum(value[i]) || value[i] == '_'))
-				// 	i++;
-				free(expanded);
-				free(tmp);
-			}
-			else
-				buf[len++] = value[i++];
-		}
-	}
-	buf[len] = '\0';
-	return (buf);
-}
+// 	buf = malloc(sizeof(char) * (ft_strlen(value) * 2 + 1));
+// 	if (!buf)
+// 		return (NULL);
+// 	len = 0;
+// 	i = 0;
+// 	state = 0;
+// 	while (value[i])
+// 	{
+// 		if (state == 0)
+// 		{
+// 			if (value[i] == '\'')
+// 			{
+// 				state = 1;
+// 				i++;
+// 			}
+// 			else if (value[i] == '\"')
+// 			{
+// 				state = 2;
+// 				i++;
+// 			}
+// 			else if (value[i] == '$')
+// 			{
+// 				int k = i;
+// 				j = 0;
+// 				tmp = malloc(sizeof(char) * (ft_strlen(value) * 2 + 1));
+// 				if (!tmp)
+// 					return (NULL);
+// 				while (value[k] && value[k] != '\'' && value[k] != '"')
+// 					tmp[j++] = value[k++];
+// 				tmp[j] = '\0';
+// 				expanded = reg_dollar_sign(tmp, head_var);
+// 				if (!expanded)
+// 					expanded = ft_strdup("");
+// 				ft_memcpy(buf + len, expanded, ft_strlen(expanded));
+// 				len += ft_strlen(expanded);
+// 				i += ft_strlen(tmp);
+// 				free(expanded);
+// 				free(tmp);
+// 			}
+// 			else if (value[i] == '\\')
+// 			{
+// 				i++;
+// 				if (value[i])
+// 					buf[len++] = value[i++];
+// 				else
+// 				{
+// 					printf("incorrect syntaxe\n");
+// 					free(buf);
+// 					return (NULL);
+// 				}
+// 			}
+// 			else
+// 				buf[len++] = value[i++];
+// 		}
+// 		else if (state == 1)
+// 		{
+// 			if (value[i] == '\'')
+// 			{
+// 				state = 0;
+// 				i++;
+// 			}
+// 			else
+// 				buf[len++] = value[i++];
+// 		}
+// 		else if (state == 2)
+// 		{
+// 			if (value[i] == '"')
+// 			{
+// 				state = 0;
+// 				i++;
+// 			}
+// 			else if (value[i] == '\\' &&
+// 						(value[i + 1] == '\\' || value[i + 1] == '$' || value[i + 1] == '\"'))
+// 			{
+// 				i++;
+// 				buf[len++] = value[i++];
+// 			}
+// 			else if (value[i] == '$')
+// 			{
+// 				int k = i;
+// 				j = 0;
+// 				tmp = malloc(sizeof(char) * (ft_strlen(value) * 2 + 1));
+// 				if (!tmp)
+// 					return (NULL);
+// 				while (value[k] && value[k] != '\'' && value[k] != '"')
+// 					tmp[j++] = value[k++];
+// 				tmp[j] = '\0';
+// 				expanded = reg_dollar_sign(tmp, head_var);
+// 				if (!expanded)
+// 					expanded = ft_strdup("");
+// 				ft_memcpy(buf + len, expanded, ft_strlen(expanded));
+// 				len += ft_strlen(expanded);
+// 				i += ft_strlen(tmp);
+// 				// while (value[i] && (ft_isalnum(value[i]) || value[i] == '_'))
+// 				// 	i++;
+// 				free(expanded);
+// 				free(tmp);
+// 			}
+// 			else
+// 				buf[len++] = value[i++];
+// 		}
+// 	}
+// 	buf[len] = '\0';
+// 	return (buf);
+// }
 
 // char	*extract_value_if_sign(char *value, t_varlist **head_var)
 // {

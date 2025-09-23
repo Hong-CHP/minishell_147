@@ -15,9 +15,23 @@ t_variable	*search_target_var_node(t_varlist **head, char *find_var)
 	return (NULL);
 }
 
-void    find_var_node_modif_val(t_variable *modif_var_node, char *match, t_varlist **head)
+void	replace_new_val_for_val(char *find_val, t_variable *modif_var_node)
 {
-    char *find_val;
+	if (if_still_space(find_val))
+	{
+		modif_var_node->val = malloc(sizeof(char) * (ft_strlen(find_val) + 1));
+		if (!modif_var_node->val)
+			return ;
+		split_space_in_val(find_val, modif_var_node->val);
+		free(find_val);
+	}
+	else
+		modif_var_node->val = find_val;
+}
+
+void    find_var_node_modif_val(t_variable *modif_var_node, char *match)
+{
+    char	*find_val;
 	int		ch;
 
 	if (*(match + 1))
@@ -32,22 +46,12 @@ void    find_var_node_modif_val(t_variable *modif_var_node, char *match, t_varli
 	if (ch == -1)
 	{
 		printf("unclose quote\n");
-		free(modif_var_node->val);
 		free(find_val);
 		return ;
 	}
-	if (ch != 0)
-	{
-		find_val = extract_value(find_val, head);
-		if (!find_val)
-		{
-			free(modif_var_node->val);
-			return ;
-		}
-	}
-    if (modif_var_node->val)
+	if (modif_var_node->val)
         free(modif_var_node->val);
-    modif_var_node->val = find_val;
+	replace_new_val_for_val(find_val, modif_var_node);
 }
 
 void	create_var_list(t_varlist **head, char *input, t_command *cmd_node)
@@ -65,7 +69,7 @@ void	create_var_list(t_varlist **head, char *input, t_command *cmd_node)
 		return ;
 	}
 	ft_memset(var_node->var_data, 0, sizeof(t_variable));
-	if (!init_registre_variable(var_node->var_data, input, head))
+	if (!init_registre_variable(var_node->var_data, input))
 	{
 		free(var_node->var_data);
 		free(var_node);
@@ -82,7 +86,7 @@ int		process_var_val_export(t_varlist **head, char *input, t_variable *var_node,
 	char *match_var;
 	char   *find_var;
 
-	if (!is_valide_varname(input))
+	if (!is_valide_varname_for_export(input, head, cmd_node))
 		return (1);
 	if (ft_strchr(input, '='))
 	{
@@ -91,13 +95,12 @@ int		process_var_val_export(t_varlist **head, char *input, t_variable *var_node,
 	}
 	else
 		find_var = ft_substr(input, 0, ft_strlen(input));
-	// printf("find_var is %s\n", find_var);
 	var_node = search_target_var_node(head, find_var);
 	if (!var_node)
 		create_var_list(head, input, cmd_node);
 	else if (var_node && ft_strchr(input, '='))
 	{
-		find_var_node_modif_val(var_node, match_var, head);
+		find_var_node_modif_val(var_node, match_var);
 		var_node->exported = 1;
 	}
 	else if (var_node && !ft_strchr(input, '='))
@@ -107,18 +110,32 @@ int		process_var_val_export(t_varlist **head, char *input, t_variable *var_node,
 	return (0);
 }
 
-int		create_var_list_or_find_node(t_varlist **head, char *input, t_cmdlist **head_cmd)
+void	reg_variable_list_issue(char *input, t_varlist **head)
 {
 	char		*match_var;
 	char		*find_var;
 	t_variable  *var_node;
-	t_cmdlist	*cur;
-	int			i;
-	(void)input;
 
 	var_node = NULL;
 	match_var = NULL;
 	find_var = NULL;
+	match_var = ft_strchr(input, '=');
+	find_var = ft_substr(input, 0, match_var - input);
+	var_node = search_target_var_node(head, find_var);
+	if (!var_node)
+		create_var_list(head, input, NULL);
+	else
+		find_var_node_modif_val(var_node, match_var);
+	free(find_var);
+}
+
+int		create_var_list_or_find_node(t_varlist **head, char *input, t_cmdlist **head_cmd, t_parser *parser)
+{
+	t_cmdlist	*cur;
+	int			i;
+	(void)input;
+	(void)parser;
+
 	cur = *head_cmd;
 	while (cur)
 	{
@@ -126,21 +143,7 @@ int		create_var_list_or_find_node(t_varlist **head, char *input, t_cmdlist **hea
 		while (i < cur->command->argc)
 		{
 			if (ft_strchr(cur->command->args[i], '='))
-			{
-				if (ft_list_size(head) > 0)
-				{
-					match_var = ft_strchr(cur->command->args[i], '=');
-					find_var = ft_substr(cur->command->args[i], 0, match_var - cur->command->args[i]);
-					var_node = search_target_var_node(head, find_var);
-					if (!var_node)
-						create_var_list(head, cur->command->args[i], NULL);
-					else
-						find_var_node_modif_val(var_node, match_var, head);
-					free(find_var);
-				}
-				else
-					create_var_list(head, cur->command->args[i], NULL);
-			}
+				reg_variable_list_issue(cur->command->args[i], head);
 			else
 				minishell(cur->command->args[i], head, NULL);
 			i++;

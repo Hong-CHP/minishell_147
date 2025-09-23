@@ -26,7 +26,6 @@ int		builtin_unset(t_varlist **head_var, t_command *cmd_node)
 {
 	t_varlist	*cur;
 	t_varlist	*prev;
-	t_varlist	*tmp;
 	int			i;
 
 	i = 1;
@@ -39,16 +38,7 @@ int		builtin_unset(t_varlist **head_var, t_command *cmd_node)
 			if (ft_strcmp(cur->var_data->var, cmd_node->args[i]) == 0
 				&& cur->var_data->exported == 1)
 			{
-				if (prev)
-					prev->next = cur->next;
-				else
-					*head_var = cur->next;
-				tmp = cur->next;
-				free(cur->var_data->val);
-				free(cur->var_data->var);
-				free(cur->var_data);
-				free(cur);
-				cur = tmp;
+				unset_variable_from_list(head_var, &cur, &prev);
 				continue;
 			}
 			prev = cur;
@@ -66,28 +56,14 @@ int		builtin_export(t_varlist **head_var, t_command *cmd_node, int sub_process)
 
 	var_node = NULL;
 	if (cmd_node->argc == 1)
-	{
-		if (ft_strchr(cmd_node->cmd, '"'))
-		{
-			ft_putstr_fd("minishell:", 2);
-			ft_putstr_fd(cmd_node->cmd, 2);
-			ft_putstr_fd(": not a valid identifier\n", 2);
-			return (1);
-		}
 		print_all_variable_in_list(head_var);
-	}
 	else if (!sub_process)
 	{
 		i = 1;
 		while (i < cmd_node->argc)
 		{
 			if (process_var_val_export(head_var, cmd_node->args[i], var_node, cmd_node) == 1)
-			{
-				ft_putstr_fd("minishell:", 2);
-				ft_putstr_fd(cmd_node->args[i], 2);
-				ft_putstr_fd(": not a valid identifier\n", 2);
-				return (1);
-			}
+				return (put_export_err_msg(cmd_node));
 			i++;
 		}
 	}
@@ -96,11 +72,10 @@ int		builtin_export(t_varlist **head_var, t_command *cmd_node, int sub_process)
 
 int		execute_builtin(t_varlist **head_var, t_command *cmd_node, char **ev, int sub_process)
 {
-	(void)ev;
 	if (!cmd_node || !cmd_node->args)
 		return (0);
 	if (ft_strcmp(cmd_node->args[0], "cd") == 0)
-		return (builtin_cd(cmd_node));
+		return (builtin_cd(cmd_node, head_var));
 	if (ft_strcmp(cmd_node->args[0], "echo") == 0)
 		return (builtin_echo(cmd_node));
 	if (ft_strcmp(cmd_node->args[0], "export") == 0)

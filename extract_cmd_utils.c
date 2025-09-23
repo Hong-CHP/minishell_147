@@ -77,35 +77,6 @@ char	*find_words_in_slash(char *content)
 	return (str);
 }
 
-// char	*find_words_in_single_quote(char *content, char ch)
-// {
-// 	int		i;
-// 	int		start;
-//     size_t  len;
-// 	char	*str;
-// 	//malloc need to be free then
-	
-//     len = ft_strlen(content);
-// 	i = 0;
-// 	str = NULL;
-// 	start = 0;
-// 	while (i < (int)len && content[i] != ch)
-// 		i++;
-	// if (content[i] == '\0')
-	// 	return (NULL);
-	// i++;
-	// start = i;
-// 	while (i < (int)len && content[i] != ch)
-// 		i++;
-// 	if(content[i] == '\0')
-// 		return (NULL);
-// 	str = malloc(sizeof(char) * (i - start + 1));
-// 	if (!str)
-// 		return (NULL);
-// 	ft_strlcpy(str, &(content[start]), i - start + 1);
-// 	return (str);
-// }
-
 char	*find_words_in_single_quote(char *src, char ch)
 {
 	char	*dest;
@@ -163,47 +134,3 @@ char	*find_words_in_quote(char *src, char ch)
 	dest[j] = '\0';
 	return (dest);
 }
-
-// char	*find_words_in_quote(char *content, char ch)
-// {
-// 	int		i;
-// 	int		start;
-//     size_t  len;
-// 	char	*str;
-// 	//malloc need to be free then
-// 	char	*slash_ptr;
-	
-//     len = ft_strlen(content);
-// 	i = 0;
-// 	str = NULL;
-// 	start = 0;
-// 	while (i < (int)len && content[i] != ch)
-// 		i++;
-// 	if (content[i] == '\0')
-// 		return (NULL);
-// 	i++;
-// 	start = i;
-// 	while (i < (int)len && content[i] != ch)
-// 	{
-// 		if (content[i] == '\\' && content[i + 1] == ch)
-// 			i++;
-// 		i++;
-// 	}
-// 	if(content[i] == '\0')
-// 		return (NULL);
-// 	str = malloc(sizeof(char) * (i - start + 1));
-// 	if (!str)
-// 		return (NULL);
-// 	slash_ptr = ft_strchr(content, '\\');
-// 	if (slash_ptr)
-// 	{
-// 		printf("slash_ptr is %s\n", slash_ptr);
-// 		if (*(slash_ptr + 1) && *(slash_ptr + 1) == ch)
-// 			copy_str_without_slash(str, &(content[start]), i - start);
-// 		else
-// 			ft_strlcpy(str, &(content[start]), i - start + 1);
-// 	}
-// 	else
-// 		ft_strlcpy(str, &(content[start]), i - start + 1);
-// 	return (str);
-// }

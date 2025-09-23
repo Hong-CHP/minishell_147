@@ -27,28 +27,34 @@ int	creat_write_in_tmp_file(t_command *cmd)
 	return (tmpfile);
 }
 
-int		execute_here_doc(t_cmdlist **head_cmd, t_pipex *pipe_data)
+int		open_redir_outfile(t_cmdlist **head_cmd, t_pipex *pipe_data, t_parser *parser)
 {
-	t_cmdlist	*last;
-	t_cmdlist	*first;
-	int			tmpfile;
 	t_redir		*tmp;
 
-	first = *head_cmd;
-	last = *head_cmd;
-	while (last && last->next)
-		last = last->next;
-	tmpfile = 1;
-	if (last->command->outfile)
+	tmp = (*head_cmd)->command->outfile;
+	while (tmp->next)
+		tmp = tmp->next;
+	if (tmp->append == 1)
+		pipe_data->f_fds[1] = open(tmp->name, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	else
+		pipe_data->f_fds[1] = open(tmp->name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (pipe_data->f_fds[1] < 0)
 	{
-		tmp = last->command->outfile;
-		while (tmp->next)
-			tmp = tmp->next;
-		if (tmp->append == 1)
-			pipe_data->f_fds[1] = open(tmp->name, O_WRONLY | O_CREAT | O_APPEND, 0644);
-		else
-			pipe_data->f_fds[1] = open(tmp->name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		if (pipe_data->f_fds[1] < 0)
+		check_outfile_permission(parser, tmp->name);
+		ft_put_err_msg(parser, NULL, tmp->name);
+		return (0);
+	}
+	return (1);
+}
+
+int		execute_here_doc(t_cmdlist **head_cmd, t_pipex *pipe_data, t_parser *parser)
+{
+	int			tmpfile;
+
+	tmpfile = 1;
+	if ((*head_cmd)->command->outfile)
+	{
+		if (!open_redir_outfile(head_cmd, pipe_data, parser))
 			return (0);
 	}
 	tmpfile = creat_write_in_tmp_file((*head_cmd)->command);
@@ -58,8 +64,8 @@ int		execute_here_doc(t_cmdlist **head_cmd, t_pipex *pipe_data)
 	tmpfile = open("here.txt", O_RDONLY);
 	if (tmpfile < 0)
 		return (0);
-	if (first->command->infile)
-		pipe_data->f_fds[0] = open(first->command->infile, O_RDONLY);
+	if ((*head_cmd)->command->infile)
+		pipe_data->f_fds[0] = open((*head_cmd)->command->infile, O_RDONLY);
 	else
 		pipe_data->f_fds[0] = tmpfile;
 	return(1);

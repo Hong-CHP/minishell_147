@@ -33,28 +33,44 @@ t_token *create_token(t_tk_type type, char *value)
 	return (tok);
 }
 
-t_token	*create_word_token(t_parser *parser, t_varlist **head_var, t_token *prev_tok)
+char	*extract_word_token(t_parser *parser, t_varlist **head_var, t_token *prev_tok, char **word)
 {
-	char	*word;
-	t_token	*tok;
-	int		move = 0;
+	int		move;
 
-	word = NULL;
-	tok = NULL;
+	move = 0;
 	if (prev_tok && prev_tok->type == TOKEN_REDIR_HEREDOC)
 	{
-		word = get_heredoc_limit(&parser->input[parser->pos], &move);
+		*word = get_heredoc_limit(&parser->input[parser->pos], &move);
 		parser->pos += move;
 	}
 	else
-		word = extract_word(parser, head_var);
+	{
+		*word = ft_strdup("");
+		if(!extract_word(parser, head_var, &move, word))
+		{
+			free(*word);
+			return (NULL);
+		}
+	}
+	return (*word);
+}
+
+t_token	*create_word_token(t_parser *parser, t_varlist **head_var, t_token *prev_tok)
+{
+	t_token	*tok;
+	char	*word;
+
+	word = NULL;
+	tok = NULL;
+	if (!extract_word_token(parser, head_var, prev_tok, &word))
+		return (NULL);
 	if (!word)
 		return (NULL);
 	tok = create_token(TOKEN_WORD, word);
-	if (tok)
-		free(word);
 	if (!tok)
 		return (NULL);
+	else
+		free(word);
 	return (tok);
 }
 

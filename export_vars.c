@@ -14,28 +14,12 @@ int		count_size_of_envp(char **envp)
 void	print_all_variable_in_list(t_varlist **head)
 {
 	t_varlist	*cur;
-	t_varlist	*export_node;
 	t_varlist	*export_head;
 
-	cur = *head;
 	export_head = NULL;
-	while (cur)
-	{
-		export_node = malloc(sizeof(t_varlist));
-		if (!export_node)
-			return ;
-		export_node->var_data = malloc(sizeof(t_variable));
-		if (!export_node->var_data)
-		{
-			free(export_node);
-			return ;
-		}
-		export_node->var_data->var = ft_strdup(cur->var_data->var);
-		export_node->var_data->val = ft_strdup(cur->var_data->val);
-		export_node->var_data->exported = cur->var_data->exported;
-		add_var_lst_order(&export_head, export_node);
-		cur = cur->next;
-	}
+	create_export_list(&export_head, head);
+	if (!export_head)
+		return ;
 	cur = export_head;
 	while (cur)
 	{
@@ -45,19 +29,6 @@ void	print_all_variable_in_list(t_varlist **head)
 	}
 	clean_var_list(&export_head);
 }
-
-// no used func
-// void	set_varlist_exported(t_varlist **head_var)
-// {
-// 	t_varlist	*cur;
-
-// 	cur = *head_var;
-// 	while (cur)
-// 	{
-// 		cur->var_data->exported = 1;
-// 		cur = cur->next;
-// 	}
-// }
 
 void	init_varnode_vardata_for_ev(t_varlist **var_node)
 {

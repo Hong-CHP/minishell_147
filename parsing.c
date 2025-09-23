@@ -1,15 +1,14 @@
 #include "minishell.h"
 #include "libft.h"
 
-t_command	*tokenize_cmd(t_parser *parser, t_varlist **head_var, t_cmdlist *node)
+t_command	*tokenize_cmd(t_parser *parser, t_cmdlist *node)
 {
-	(void)head_var;
-	int i = 0;
 	while (parser->current && is_cmd_token(parser->current->type))
 	{
 		if (parser->current->type == TOKEN_WORD)
 		{
-			handle_word(parser, node->command->args, &(node->command->argc));
+			if (handle_word(parser, node->command->args, &(node->command->argc)) != 0)
+				return (NULL);
 			node->command->cmd = parser->input;
 		}
 		else
@@ -17,7 +16,6 @@ t_command	*tokenize_cmd(t_parser *parser, t_varlist **head_var, t_cmdlist *node)
 			if (process_token(parser, node))
 				return (NULL);
 		}
-		i++;
 		parser->current = parser->current->next;
 	}
 	node->command->args[node->command->argc] = NULL;
@@ -52,6 +50,7 @@ t_command	*create_init_cmd(t_cmdlist *node)
 t_cmdlist	*parse_simple_cmd(t_parser *parser, t_varlist **head_var)
 {
 	t_cmdlist	*node;
+	int			i;
 
 	node = (t_cmdlist *)malloc(sizeof(t_cmdlist));
 	if (!node)
@@ -62,14 +61,22 @@ t_cmdlist	*parse_simple_cmd(t_parser *parser, t_varlist **head_var)
 		node->var_list = *head_var;
 	else
 		node->var_list = NULL;
-	if (!tokenize_cmd(parser, head_var, node))
+	if (!tokenize_cmd(parser, node))
 	{
+		i = 0;
+		while (i < node->command->argc)
+		{
+			free(node->command->args[i]);
+			i++;
+		}
+		free(node->command->args);
+		free(node->command);
 		free(node);
 		return (NULL);
 	}
 	node->next = NULL;
 	return (node);
-}
+}_status = 0;
 
 t_cmdlist	*parse_pipeline(t_parser *parser, t_varlist **head_var)
 {
@@ -80,9 +87,9 @@ t_cmdlist	*parse_pipeline(t_parser *parser, t_varlist **head_var)
 	while (parser->current && parser->current->type != TOKEN_EOF)
 	{
 		cmd_node = parse_simple_cmd(parser, head_var);
-		if (!cmd_node)
+		if (!cmd_node)_status = 0;
 		{
-			clean_cmdlist(&head);
+			// clean_cmdlist(&head);
 			return (NULL);
 		}
 		add_cmdlist_back(&head, cmd_node);
