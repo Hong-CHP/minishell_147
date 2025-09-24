@@ -1,20 +1,6 @@
 #include "minishell.h"
 #include "libft.h"
 
-void	update_exit_status(int status, t_parser *parser)
-{
-	if (WIFEXITED(status))
-		*parser->g_exit_status = WEXITSTATUS(status);
-	else if (WIFSIGNALED(status))
-	{
-		*parser->g_exit_status = 128 + WTERMSIG(status);
-		if (*parser->g_exit_status == 130)
-			ft_putchar_fd('\n', 1);
-	}
-	else
-		*parser->g_exit_status = 1;
-}
-
 int	if_slash(char *str)
 {
 	int	i;
@@ -87,3 +73,33 @@ void	free_split(char **strs)
 	free(strs);
 	strs = NULL;
 }
+
+int		no_executable_if_empty(t_command *cmd, t_parser *parser)
+{
+	if (!cmd)
+		return (0);
+	if (cmd->cmd && !*cmd->cmd)
+		return (0);
+	if (!cmd->args || !cmd->args[0])
+		return (0);
+	if (cmd->invalid_in)
+	{
+		ft_put_err_msg(parser, NULL, cmd->infile);
+		return (0);
+	}
+	return (1);
+}
+
+// void	update_exit_status(int status, t_parser *parser)
+// {
+// 	if (WIFEXITED(status))
+// 		*parser->g_exit_status = WEXITSTATUS(status);
+// 	else if (WIFSIGNALED(status))
+// 	{
+// 		*parser->g_exit_status = 128 + WTERMSIG(status);
+// 		if (*parser->g_exit_status == 130)
+// 			ft_putchar_fd('\n', 1);
+// 	}
+// 	else
+// 		*parser->g_exit_status = 1;
+// }

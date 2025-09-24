@@ -1,163 +1,64 @@
 #include "minishell.h"
 #include "libft.h"
 
-char	*extract_if_slash(char *buf, t_parser *parser, int *len)
+void	extract_word_front(t_handler_qt *cur, char **res, t_parser *parser, t_varlist **head_var)
 {
-	parser->pos++;
+	char			*tmp;
+	char			*new;
 
-	if (!parser->input[parser->pos])
+	if (parser->input[cur->start_qt_input] == '\'')
 	{
-		set_error(parser, "incorrect syntaxe", 1);
+		new = ft_strjoin(*res, cur->part);
+		free(*res);
+		*res = new;		
+	}
+	else if (parser->input[cur->start_qt_input] == '"')
+	{
+		tmp = reg_dollar_sign(cur->part, head_var, parser);
+		new = ft_strjoin(*res, tmp);
+		free(*res);
+		*res = new;
+		free(tmp);
+	}
+}
+
+void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var, t_parser *parser)
+{
+	char	*tmp;
+	char	*new;
+
+	if (ft_strchr(part, '$'))
+	{
+		tmp = part;
+		part = reg_dollar_sign(tmp, head_var, parser);
+		free(tmp);
+	}
+	new = ft_strjoin(*res, part);
+	free(*res);
+	*res = new;
+	free(part);
+}
+
+char	*init_buf_for_extract(char **buf, t_parser *parser, t_handler_qt **handler)
+{
+	*buf = malloc(sizeof(char) * (ft_strlen(parser->input) + 1));
+	if (!*buf)
+		return (NULL);
+	ft_memset(*buf, 0, sizeof(char) * (ft_strlen(parser->input) + 1));
+	if (!extract_by_type_sign(*buf, parser, handler))
+	{
+		clean_handler_and_buf_for_extract(*buf, handler);
 		return (NULL);
 	}
-	if (parser->input[parser->pos])
-		buf[(*len)++] = parser->input[parser->pos++];
-	return (buf);
+	return (*buf);
 }
 
-// node->start_qt_input = parser->pos;
-// node->start_qt_buf = *len;
-// if (parser->input[parser->pos] == '\'')
-// {
-// 	node->part = ft_substr(parser->input, node->start_qt_input + 1, node->end_qt_input - node->start_qt_input - 1);
-// 	if (!node->part)
-// 		node->part = ft_strdup("\n");
-// 	parser->pos++;
-// 	add_handler_lst_back(handler, node);
-// 	return (buf);
-// }
-// else
-// {
-// 	free(node);
-// 	set_error(parser, "unclosed quote", 1);
-// 	return (NULL);
-// }
-char	*extract_if_single_quote(char *buf, t_parser *parser, int *len, t_handler_qt **handler)
+void 	handler_dollar_in_end(char *str, char **res, t_varlist **head_var, t_parser *parser)
 {
-	t_handler_qt	*node;
+	char	*part;
 
-	node = new_handler_node(parser->pos, *len);
-	if (!node)
-		return (NULL);
-	parser->pos++;
-	while (parser->input[parser->pos]
-		&& parser->input[parser->pos] != '\'')
-		buf[(*len)++] = parser->input[parser->pos++];
-	node->end_qt_buf = (*len) - 1;
-	return (handler_end_single_quote_data(parser, node, handler, buf));
-}
-
-// node->start_qt_input = parser->pos;
-// node->start_qt_buf = *len;
-// if (parser->input[parser->pos] == '"')
-// {
-// 	node->part = ft_substr(parser->input, node->start_qt_input + 1, node->end_qt_input - node->start_qt_input - 1);
-// 	if (!node->part)
-// 		node->part = ft_strdup("\n");
-// 	parser->pos++;
-// 	add_handler_lst_back(handler, node);
-// 	return (buf);
-// }
-// else if (!parser->input[parser->pos])
-// {
-// 	free(node);
-// 	set_error(parser, "incorrect syntaxe", 1);
-// 	return (NULL);
-// }
-char	*extract_if_double_quote(char *buf, t_parser *parser, int *len, t_handler_qt **handler)
-{
-	t_handler_qt	*node;
-
-	node = new_handler_node(parser->pos, *len);
-	if (!node)
-		return (NULL);
-	parser->pos++;
-	while (parser->input[parser->pos] && parser->input[parser->pos] != '"')
-	{
-		if (parser->input[parser->pos] == '\\' && (parser->input[parser->pos + 1] == '"'
-			|| parser->input[parser->pos + 1] == '\\' || parser->input[parser->pos + 1] == '$'))
-		{
-			parser->pos++;
-			buf[(*len)++] = parser->input[parser->pos++];
-		}
-		else
-		{
-			if (parser->input[parser->pos] == '$')
-				node->dollar++;
-			buf[(*len)++] = parser->input[parser->pos++];
-		}
-	}
-	node->end_qt_buf = (*len) - 1;
-	if (!handler_end_double_quote_data(parser, node, handler, buf))
-		return (NULL);
-	return (buf);
-}
-
-int is_separator(char c)
-{
-    return (c == ' '  || c == '\t' || c == '\n' ||
-            c == '|'  || c == '<'  || c == '>'  ||
-            c == '&'  || c == ';'  ||
-            c == '('  || c == ')');
-}
-
-char	*extract_by_slash_quotes(t_parser *parser, int *len, char *buf)
-{
-	if (parser->input[parser->pos] == '$' && (parser->input[parser->pos + 1] == '"'
-		|| parser->input[parser->pos + 1] == '\''))
-	{
-		parser->pos++;
-		while (parser->input[parser->pos] && parser->input[parser->pos] != '"'
-				&& parser->input[parser->pos] != '\'')
-			buf[(*len)++] = parser->input[parser->pos++];
-	}
-	return (buf);
-}
-
-char	*extract_by_type_sign(char *buf, t_parser *parser, t_handler_qt **handler)
-{
-	int		len;
-
-	len = 0;
-	while (parser->input[parser->pos] && !is_separator(parser->input[parser->pos]))
-	{
-		extract_by_slash_quotes(parser, &len, buf);
-		if (parser->input[parser->pos] == '\\')
-		{
-			if(!extract_if_slash(buf, parser, &len))
-				return (NULL);
-		}
-		else if (parser->input[parser->pos] == '\'')
-		{
-			if(!extract_if_single_quote(buf, parser, &len, handler))
-				return (NULL);
-		}
-		else if (parser->input[parser->pos] == '"')
-		{
-			if (!extract_if_double_quote(buf, parser, &len, handler))
-				return (NULL);
-		}
-		else
-			buf[len++] = parser->input[parser->pos++];
-	}
-	buf[len] = '\0';
-	return (buf);
-}
-
-int	if_still_space(char *res)
-{
-	int	i;
-
-	i = 0;
-	while (res[i])
-	{
-		if (!ft_isalnum(res[i]) && res[i] != ' ')
-			return (0);
-		else if (res[i] == ' ')
-			return (1);
-		i++;
-	}
-	return (0);
+	part = ft_strdup(str);
+	handler_dollar_in_word(part, res, head_var, parser);
 }
 
 char *extract_word(t_parser *parser, t_varlist **head_var, int *last_pos, char **res)
@@ -169,10 +70,7 @@ char *extract_word(t_parser *parser, t_varlist **head_var, int *last_pos, char *
 
 	handler = NULL;
 	if (!init_buf_for_extract(&buf, parser, &handler))
-	{
-		free_handler_lst(&handler);
 		return (NULL);
-	}
 	cur = handler;
 	while (cur)
 	{
@@ -186,11 +84,7 @@ char *extract_word(t_parser *parser, t_varlist **head_var, int *last_pos, char *
 		cur = cur->next;
 	}
 	if (*last_pos < (int)(ft_strlen(buf)))
-	{
-		part = ft_strdup(&buf[*last_pos]);
-		handler_dollar_in_word(part, res, head_var, parser);
-	}
-	free(buf);
-	free_handler_lst(&handler);
+		handler_dollar_in_end(&buf[*last_pos], res, head_var, parser);
+	clean_handler_and_buf_for_extract(buf, &handler);
 	return (*res);
 }

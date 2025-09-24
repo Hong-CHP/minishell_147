@@ -42,106 +42,34 @@ char	*handler_end_double_quote_data(t_parser *parser, t_handler_qt *node, t_hand
 	return (buf);
 }
 
-t_handler_qt	*new_handler_node(int start, int pos_len)
+void	clean_handler_and_buf_for_extract(char *buf, t_handler_qt **handler)
 {
-	t_handler_qt	*node;
-
-	node = malloc(sizeof(t_handler_qt));
-	if (!node)
-		return (NULL);
-	ft_memset(node, 0, sizeof(t_handler_qt));
-	node->start_qt_input = start;
-	node->end_qt_input = 0;
-	node->start_qt_buf = pos_len;
-	node->end_qt_buf = 0;
-	node->dollar = 0;
-	node->part = NULL;
-	node->next = NULL;
-	return (node);
+	if (buf)
+		free(buf);
+	if (handler && *handler)
+		free_handler_lst(handler);
 }
 
-void	add_handler_lst_back(t_handler_qt **handler, t_handler_qt *node)
+int is_separator(char c)
 {
-	t_handler_qt	*cur;
-
-	if (!*handler)
-		*handler = node;
-	else
-	{
-		cur = *handler;
-		while (cur->next)
-			cur = cur->next;
-		cur->next = node;
-	}
+    return (c == ' '  || c == '\t' || c == '\n' ||
+            c == '|'  || c == '<'  || c == '>'  ||
+            c == '&'  || c == ';'  ||
+            c == '('  || c == ')');
 }
 
-void	free_handler_lst(t_handler_qt **handler)
+int	if_still_space(char *res)
 {
-	t_handler_qt *cur;
-	t_handler_qt *next;
+	int	i;
 
-	cur = *handler;
-	while (cur)
+	i = 0;
+	while (res[i])
 	{
-		next = cur->next;
-		if (cur->part)
-			free(cur->part);
-		free(cur);
-		cur = next;
+		if (!ft_isalnum(res[i]) && res[i] != ' ')
+			return (0);
+		else if (res[i] == ' ')
+			return (1);
+		i++;
 	}
-	handler = NULL;
-}
-
-void	handler_dollar_in_word(char *part, char **res, t_varlist **head_var, t_parser *parser)
-{
-	char	*tmp;
-	char	*new;
-
-	if (ft_strchr(part, '$'))
-	{
-		tmp = part;
-		part = reg_dollar_sign(tmp, head_var, parser);
-		free(tmp);
-	}
-	new = ft_strjoin(*res, part);
-	free(*res);
-	*res = new;
-	free(part);
-}
-
-void	join_free_for_word(char **res, char *str)
-{
-	char	*new;
-
-	new = ft_strjoin(*res, str);
-	free(*res);
-	*res = new;
-} 
-
-char	*init_buf_for_extract(char **buf, t_parser *parser, t_handler_qt **handler)
-{
-	*buf = malloc(sizeof(char) * (ft_strlen(parser->input) + 1));
-	if (!*buf)
-		return (NULL);
-	ft_memset(*buf, 0, sizeof(char) * (ft_strlen(parser->input) + 1));
-	if (!extract_by_type_sign(*buf, parser, handler))
-	{
-		free(*buf);
-		return (NULL);
-	}
-	return (*buf);
-}
-
-void	extract_word_front(t_handler_qt *cur, char **res, t_parser *parser, t_varlist **head_var)
-{
-	char			*tmp;
-
-	if (parser->input[cur->start_qt_input] == '\'')
-		join_free_for_word(res, cur->part);
-	else if (parser->input[cur->start_qt_input] == '"')
-	{
-		tmp = reg_dollar_sign(cur->part, head_var, parser);
-		join_free_for_word(res, tmp);
-		free(tmp);
-	}
+	return (0);
 }

@@ -1,35 +1,6 @@
 #include "minishell.h"
 #include "libft.h"
 
-int	calc_pos_length_of_var(char *str, int j, int *pos_after_dollar)
-{
-	int		len;
-	int		k;
-
-	k = 0;
-	len = 0;
-	while (str[j] && str[j] != ' ' && str[j] != ',' && str[j] != '$'
-			&& str[j] != '\\' && str[j] != '\'' && str[j] != '"')
-	{
-		if (str[j] == '{')
-		{
-			k = j + 1;
-			*pos_after_dollar = k;
-			while (str[k])
-			{
-				if (str[k] == '}')
-					break;
-				k++;
-			}
-		}
-		len++;
-		j++;
-	}
-	if (k != 0)
-		len = k - *pos_after_dollar;
-	return (len);
-}
-
 char	*fill_multi_vars(char *str, int i)
 {
 	int		pos_after_dollar;
@@ -130,27 +101,14 @@ int    get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **hea
 char	*reg_dollar_sign(char *str, t_varlist **head_var, t_parser *parser)
 {
 	int		nb_vars;
-	// char	**vars;
-	// char	**vals;
 	char	*word;
 
 	word = NULL;
 	nb_vars = if_dollar_sign(str);
 	if (nb_vars == 0)
 		return (ft_strdup(str));
-	// vars = malloc(sizeof(char *) * (nb_vars + 1));
-	// if (!vars)
-	// 	return (NULL);
-	// find_dollar_sign(str, vars);
-	// vals = malloc(sizeof(char *) * (nb_vars + 1));
-	// if (!vals)
-	// {
-	// 	free_vars_vals(vars, vals);
-	// 	return (NULL);
-	// }
 	word = replace_init_val_by_real_val(head_var, parser, nb_vars, str);
 	if (!word)
 		return (NULL);
-	// free_vars_vals(vars, vals);
 	return (word);
 }

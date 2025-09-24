@@ -23,35 +23,6 @@ int		pipe_fork_error(void)
 	return (-1);
 }
 
-int		if_pipex(t_cmdlist **head_cmd)
-{
-	t_cmdlist	*cur;
-	int			pipe; 
-	
-	pipe = 0;
-	cur = *head_cmd;
-	while(cur)
-	{
-		pipe++;
-		cur = cur->next;
-	}
-	return (pipe);
-}
-
-t_pipex	*init_pipe_data(char **envp)
-{
-	t_pipex *pipe_data;
-
-	pipe_data = malloc(sizeof(t_pipex));
-	if (!pipe_data)
-		return (NULL);
-	pipe_data->f_fds[0] = -1;
-	pipe_data->f_fds[1] = -1;
-	pipe_data->envp = envp;
-	pipe_data->prev_pipe = -1;
-	return (pipe_data);
-}
-
 int		check_and_open_infile(t_cmdlist *cur, t_pipex *pipe_data, t_parser *parser)
 {
 	if (cur->command->infile)

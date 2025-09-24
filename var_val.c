@@ -30,38 +30,6 @@ void	fill_variable_value(char *content, char *var, char *val)
 	}
 }
 
-// char	*extract_value(char *val, t_varlist **head_var)
-// {
-// 	char	*value;
-
-// 	value = extract_value_if_sign(val, head_var);
-// 	if (!value)
-// 		return (NULL);
-// 	return (value);
-// }
-
-// t_variable	*registre_var_val(char *input, t_variable *var_dt, char *value, t_varlist **head_var)
-// {
-// 	int		ch;
-// 	// char	*tmp;
-// 	(void)value;
-// 	(void)head_var;
-
-
-// 	if (var_dt->exported == 1)
-// 		fill_variable_value(&input[7], var_dt->var, var_dt->val);
-// 	else
-// 		fill_variable_value(input, var_dt->var, var_dt->val);
-// 	ch = if_quote(var_dt->val);
-// 	if (ch == -1)
-// 	{
-// 		printf("unclose quote\n");
-// 		free(var_dt->val);
-// 		return (NULL);
-// 	}
-// 	return (var_dt);
-// }
-
 t_variable	*verify_and_init_var_val(char *input, t_variable *var_dt)
 {
 	if (var_dt->exported == 1)
@@ -101,3 +69,45 @@ int 	init_registre_variable(t_variable *var_dt, char *input)
 	}
 	return (1);
 }
+
+void	replace_new_val_for_val(char *find_val, t_variable *modif_var_node)
+{
+	if (if_still_space(find_val))
+	{
+		modif_var_node->val = malloc(sizeof(char) * (ft_strlen(find_val) + 1));
+		if (!modif_var_node->val)
+			return ;
+		split_space_in_val(find_val, modif_var_node->val);
+		free(find_val);
+	}
+	else
+		modif_var_node->val = find_val;
+}
+
+// char	*extract_value(char *val, t_varlist **head_var)
+// {
+// 	char	*value;
+// 	value = extract_value_if_sign(val, head_var);
+// 	if (!value)
+// 		return (NULL);
+// 	return (value);
+// }
+// t_variable	*registre_var_val(char *input, t_variable *var_dt, char *value, t_varlist **head_var)
+// {
+// 	int		ch;
+// 	// char	*tmp;
+// 	(void)value;
+// 	(void)head_var;
+// 	if (var_dt->exported == 1)
+// 		fill_variable_value(&input[7], var_dt->var, var_dt->val);
+// 	else
+// 		fill_variable_value(input, var_dt->var, var_dt->val);
+// 	ch = if_quote(var_dt->val);
+// 	if (ch == -1)
+// 	{
+// 		printf("unclose quote\n");
+// 		free(var_dt->val);
+// 		return (NULL);
+// 	}
+// 	return (var_dt);
+// }

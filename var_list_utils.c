@@ -1,13 +1,6 @@
 #include "minishell.h"
 #include "libft.h"
 
-int	if_export_variable(char *content)
-{
-	if (ft_strncmp("export", content, 6) == 0)
-		return (1);
-	return (0);
-}
-
 int ft_list_size(t_varlist **head)
 {
     int count;

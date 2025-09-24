@@ -1,44 +1,6 @@
 #include "minishell.h"
 #include "libft.h"
 
-void	free_vars_vals(char **vars, char **vals)
-{
-	int i;
-
-	i = 0;
-	while (vars[i])
-	{
-		free(vars[i]);
-		if (vals[i])
-			free(vals[i]);
-		i++;
-	}
-	free(vars);
-	vars = NULL;
-	if (vals)
-		free(vals);
-	vals = NULL;
-}
-
-//  && str[i + 2] == '?' && str[i + 3] == '}')))
-int if_dollar_sign(char *str)
-{
-	int i;
-	int count;
-		
-	count = 0;
-	i = 0;
-	while (str[i])
-	{
-		if (str[i] == '$' && str[i + 1]
-		&& (ft_isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?'
-			|| str[i + 1] == '{'))
-			count++;
-		i++;
-	}
-	return (count);
-}
-
 int	is_varname_format_brackets(char *str, int i)
 {
 	i++;
@@ -79,45 +41,48 @@ int	is_varname_format(char *str)
 	return (i);
 }
 
+void	handle_dollar_sequence(char *str, char **vars, char **vals, t_fill *ctx)
+{
+	int	o;
+
+	o = 0;
+	ctx->i++;
+	if (str[ctx->i] == '{')
+		ctx->i++;
+	if (vars[ctx->k])
+	{
+		while(vals[ctx->k][o])
+			ctx->word[ctx->j++] = vals[ctx->k][o++];
+		ctx->i += ft_strlen(vars[ctx->k]);
+		if (str[ctx->i] == '}')
+			ctx->i++;
+		ctx->k++;
+	}
+	else
+		ctx->word[ctx->j++] = '$';
+}
+
 char	*fill_words_with_real_vals(char *str, char **vars, char **vals, int t_len)
 {
-	int		i;
-	int		j;
-	int		k;
-	int		o;
+	t_fill	ctx;
 	char	*word;
 
 	word = malloc(sizeof(char) * (t_len + 1));
 	if (!word)
 		return (NULL);
-	i = 0;
-	k = 0;
-	j = 0;
-	while(j < t_len)
+	ctx.i = 0;
+	ctx.j = 0;
+	ctx.k = 0;
+	ctx.word = word;
+	while(ctx.j < t_len)
 	{
-		if (str[i] == '$' && str[i + 1] && str[i + 1] != '$')
-		{
-			i++;
-			if (str[i] == '{')
-				i++;
-			if (vars[k])
-			{
-				o = 0;
-				while(vals[k][o])
-					word[j++] = vals[k][o++];
-				i += ft_strlen(vars[k]);
-				if (str[i] == '}')
-					i++;
-				k++;
-			}
-			else
-				word[j++] = '$';
-		}
+		if (str[ctx.i] == '$' && str[ctx.i + 1] && str[ctx.i + 1] != '$')
+			handle_dollar_sequence(str, vars, vals, &ctx);
 		else
-			word[j++] = str[i++];
+			word[ctx.j++] = str[ctx.i++];
 	}
-	word[j] = '\0';
-	return (word);
+	word[ctx.j] = '\0';
+	return (ctx.word);
 }
 
 char	*replace_init_val_by_real_val(t_varlist **head_var, t_parser *parser, int nb_vars, char *str)
@@ -127,8 +92,6 @@ char	*replace_init_val_by_real_val(t_varlist **head_var, t_parser *parser, int n
 	char	**vars;
 	char	**vals;
 
-	vars = NULL;
-	vals = NULL;
 	vars = malloc(sizeof(char *) * (nb_vars + 1));
 	if (!vars)
 		return (NULL);
@@ -136,7 +99,7 @@ char	*replace_init_val_by_real_val(t_varlist **head_var, t_parser *parser, int n
 	vals = malloc(sizeof(char *) * (nb_vars + 1));
 	if (!vals)
 	{
-		free_vars_vals(vars, NULL);
+		free_vars_vals(vars, vals);
 		return (NULL);
 	}
 	t_len = get_vals_and_tot_len(str, vals, vars, head_var, parser);
@@ -146,5 +109,6 @@ char	*replace_init_val_by_real_val(t_varlist **head_var, t_parser *parser, int n
 		free_vars_vals(vars, vals);
 		return (NULL);
 	}
+	free_vars_vals(vars, vals);
 	return (word);
 }
