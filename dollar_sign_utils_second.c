@@ -3,7 +3,7 @@
 
 void	free_vars_vals(char **vars, char **vals)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (vars[i])
@@ -20,18 +20,18 @@ void	free_vars_vals(char **vars, char **vals)
 	vals = NULL;
 }
 
-int if_dollar_sign(char *str)
+int	if_dollar_sign(char *str)
 {
-	int i;
-	int count;
-		
+	int	i;
+	int	count;
+
 	count = 0;
 	i = 0;
 	while (str[i])
 	{
 		if (str[i] == '$' && str[i + 1]
-		&& (ft_isalnum(str[i + 1]) || str[i + 1] == '_' || str[i + 1] == '?'
-			|| str[i + 1] == '{'))
+			&& (ft_isalnum(str[i + 1]) || str[i + 1] == '_'
+				|| str[i + 1] == '?' || str[i + 1] == '{'))
 			count++;
 		i++;
 	}

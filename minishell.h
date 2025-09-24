@@ -212,7 +212,7 @@ int		get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_
 char	*fill_words_with_real_vals(char *str, char **vars, char **vals, int t_len);
 //dollar_sign_utils.c
 int		is_varname_format(char *str);
-char	*replace_init_val_by_real_val(t_varlist **head_var, t_parser *parser, int nb_vars, char *str);
+char	*replace_by_real_val(t_varlist **head, t_parser *p, int nb_v, char *str);
 // dollar_sign_utils_second.c
 void	free_vars_vals(char **vars, char **vals);
 int		if_dollar_sign(char *str);
@@ -242,8 +242,8 @@ int		check_infile_permission(t_parser *parser, char *infile);
 int		check_outfile_permission(t_parser *parser, char *outfile);
 //build_in.c
 int		if_buildin(char *cmd);
-int		execute_builtin(t_varlist **head_var, t_command *cmd_node, char **ev, int sub_process);
-int		builtin_export(t_varlist **head_var, t_command *cmd_node, int sub_process);
+int	execute_builtin(t_varlist **hd_v, t_command *commd, char **ev, int sub_proc);
+int	builtin_export(t_varlist **hd_v, t_command *cmd, int sub_p);
 //execute_cmd.c
 void	execute_cmd(t_varlist **head_var, t_command *command, char **ev, t_parser *parser);
 void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser);
@@ -271,7 +271,7 @@ void	print_all_variable_in_list(t_varlist **head);
 int		builtin_echo(t_command *cmd);
 int		builtin_cd(t_command *cmd, t_varlist **head);
 int		builtin_pwd(void);
-int		builtin_env(char **ev, t_varlist **head);
+int		builtin_env(t_varlist **head);
 int		builtin_exit(t_command *cmd);
 // here_doc_limit.c
 char	*get_heredoc_limit(char *input, int *move);
@@ -284,7 +284,7 @@ int		check_echo_n_in_args(char *str);
 // build_in_utils_second.c
 int		get_cd_home_path(char **path, t_varlist **head);
 int		check_cd_path_err(char *path);
-void	unset_variable_from_list(t_varlist **head_var, t_varlist **cur, t_varlist **prev);
+void	unset_variable(t_varlist **head, t_varlist **cur, t_varlist **prev);
 int		put_exit_err_msg(void);
 // export_vars_utils.c
 int		if_export_variable(char *content);

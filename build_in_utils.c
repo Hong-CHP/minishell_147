@@ -1,7 +1,7 @@
 #include "minishell.h"
 #include "libft.h"
 
-int		put_export_err_msg(t_command *cmd_node)
+int	put_export_err_msg(t_command *cmd_node)
 {
 	ft_putstr_fd("minishell: ", 2);
 	ft_putstr_fd(cmd_node->args[1], 2);
@@ -35,7 +35,7 @@ t_varlist	*create_export_list(t_varlist **export_head, t_varlist **head)
 	return (*export_head);
 }
 
-int		get_cd_path(t_command *cmd, char **path, t_varlist **head)
+int	get_cd_path(t_command *cmd, char **path, t_varlist **head)
 {
 	if (cmd->argc == 1)
 	{
@@ -71,7 +71,7 @@ void	put_echo_content(t_command *cmd, int *i)
 	}
 }
 
-int		check_echo_n_in_args(char *str)
+int	check_echo_n_in_args(char *str)
 {
 	int	i;
 

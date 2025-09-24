@@ -4,7 +4,7 @@
 char	**extract_path(t_varlist **head_var)
 {
 	t_varlist	*cur;
-	char	**ev_path;
+	char		**ev_path;
 
 	cur = *head_var;
 	while (cur)
@@ -43,30 +43,30 @@ char	*get_path_after_join(char **args, char **ev_path, int i)
 	return (path);
 }
 
-char *search_in_path(char **args, char **ev_path)
+char	*search_in_path(char **args, char **ev_path)
 {
-    int   i;
-    char *path;
-    char *exe_path;
+	int		i;
+	char	*path;
+	char	*exe_path;
 
-    exe_path = NULL;
-    i = 0;
-    while (ev_path[i])
-    {
-        path = get_path_after_join(args, ev_path, i);
-        if (path)
-        {
-            if (access(path, X_OK) == 0)
-            {
-                exe_path = ft_strdup(path);
-                free(path);
-                break;
-            }
-            free(path);
-        }
-        i++;
-    }
-    return (exe_path);
+	exe_path = NULL;
+	i = 0;
+	while (ev_path[i])
+	{
+		path = get_path_after_join(args, ev_path, i);
+		if (path)
+		{
+			if (access(path, X_OK) == 0)
+			{
+				exe_path = ft_strdup(path);
+				free(path);
+				break ;
+			}
+			free(path);
+		}
+		i++;
+	}
+	return (exe_path);
 }
 
 char	*find_exe_path(char **args, t_varlist **head_var)

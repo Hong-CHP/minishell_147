@@ -89,6 +89,7 @@ void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data
 	}
 	if (pid == 0)
 	{
+		// signal(SIGQUIT, SIG_DFL);
 		single_cmd_child_redir(&pipe_data);
 		execute_cmd(head_var, cmd, pipe_data->envp, parser);
 	}

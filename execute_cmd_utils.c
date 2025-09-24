@@ -62,7 +62,7 @@ char	**find_sign_then_split(char *str)
 
 void	free_split(char **strs)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (strs[i])
@@ -74,7 +74,7 @@ void	free_split(char **strs)
 	strs = NULL;
 }
 
-int		no_executable_if_empty(t_command *cmd, t_parser *parser)
+int	no_executable_if_empty(t_command *cmd, t_parser *parser)
 {
 	if (!cmd)
 		return (0);

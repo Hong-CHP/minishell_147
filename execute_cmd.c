@@ -10,37 +10,37 @@ void	exit_if_empty(t_command *command, int *empty)
 		(*empty)++;
 		if (!command->args[*empty])
 			exit(0);
-	}	
+	}
 }
 
-void	path_exist_issue(t_command *command, int *empty, t_parser *parser, char *exe_path)
+void	path_exist_issue(t_command *cmd, int *emp, t_parser *p, char *ex_path)
 {
-	if (if_slash(command->args[*empty]) > 0 && !exe_path)
+	if (if_slash(cmd->args[*emp]) > 0 && !ex_path)
 	{
-		set_error(parser, "No such file or directory", 127);
-		ft_put_err_msg(parser, NULL, command->args[*empty]);
-		exit(127);
+		set_error(p, "Not a directory", 126);
+		ft_put_err_msg(p, NULL, cmd->args[*emp]);
+		exit(126);
 	}
-	if (!exe_path)
+	if (!ex_path)
 	{
-		set_error(parser, "command not found", 127);
-		ft_put_err_msg(parser, NULL, command->args[*empty]);
+		set_error(p, "command not found", 127);
+		ft_put_err_msg(p, NULL, cmd->args[*emp]);
 		exit (127);
 	}
 }
 
-void	slash_already_path(t_command *command, int *empty, t_parser *parser, char **exe_path)
+void	slash_in_path(t_command *cmd, int *emp, t_parser *p, char **ex_path)
 {
-	if (access(command->args[*empty], X_OK) == 0)
+	if (access(cmd->args[*emp], X_OK) == 0)
 	{
-		*exe_path = ft_strdup(command->args[*empty]);
+		*ex_path = ft_strdup(cmd->args[*emp]);
 	}
 	else
 	{
-		if (access(command->args[*empty], F_OK) == 0)
+		if (access(cmd->args[*emp], F_OK) == 0)
 		{
-			set_error(parser, "Permission denied", 126);
-			ft_put_err_msg(parser, NULL, command->args[*empty]);
+			set_error(p, "Permission denied", 126);
+			ft_put_err_msg(p, NULL, cmd->args[*emp]);
 			exit (126);
 		}
 	}
@@ -60,7 +60,7 @@ void	execute_cmd(t_varlist **head_var, t_command *command, char **ev, t_parser *
 		exit(*parser->g_exit_status);
 	}
 	if (if_slash(command->args[empty]) > 0)
-		slash_already_path(command, &empty, parser, &exe_path);
+		slash_in_path(command, &empty, parser, &exe_path);
 	else
 		exe_path = find_exe_path(command->args, head_var);
 	path_exist_issue(command, &empty, parser, exe_path);

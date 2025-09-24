@@ -1,7 +1,7 @@
 #include "minishell.h"
 #include "libft.h"
 
-int		check_infile_permission(t_parser *parser, char *infile)
+int	check_infile_permission(t_parser *parser, char *infile)
 {
 	if (access(infile, F_OK) == -1)
 		return (set_error(parser, "No such file or directory", 1));
@@ -10,7 +10,7 @@ int		check_infile_permission(t_parser *parser, char *infile)
 	return (0);
 }
 
-int		check_outfile_permission(t_parser *parser, char *outfile)
+int	check_outfile_permission(t_parser *parser, char *outfile)
 {
 	char	*slash;
 	char	*path;

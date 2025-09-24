@@ -1,9 +1,9 @@
 #include "minishell.h"
 #include "libft.h"
 
-int		get_cd_home_path(char **path, t_varlist **head)
+int	get_cd_home_path(char **path, t_varlist **head)
 {
-	char	*home;
+	char		*home;
 	t_varlist	*cur;
 
 	home = NULL;
@@ -23,7 +23,7 @@ int		get_cd_home_path(char **path, t_varlist **head)
 	return (0);
 }
 
-int		check_cd_path_err(char *path)
+int	check_cd_path_err(char *path)
 {
 	ft_putstr_fd("cd: ", 2);
 	ft_putstr_fd(path, 2);
@@ -36,14 +36,14 @@ int		check_cd_path_err(char *path)
 	return (1);
 }
 
-void	unset_variable_from_list(t_varlist **head_var, t_varlist **cur, t_varlist **prev)
+void	unset_variable(t_varlist **hd, t_varlist **cur, t_varlist **pre)
 {
 	t_varlist	*tmp;
 
-	if ((*prev))
-		(*prev)->next = (*cur)->next;
+	if ((*pre))
+		(*pre)->next = (*cur)->next;
 	else
-		*head_var = (*cur)->next;
+		*hd = (*cur)->next;
 	tmp = (*cur)->next;
 	free((*cur)->var_data->val);
 	free((*cur)->var_data->var);
@@ -52,7 +52,7 @@ void	unset_variable_from_list(t_varlist **head_var, t_varlist **cur, t_varlist *
 	(*cur) = tmp;
 }
 
-int		put_exit_err_msg(void)
+int	put_exit_err_msg(void)
 {
 	ft_putstr_fd("minishell: exit: numeric argument required\n", 2);
 	return (2);

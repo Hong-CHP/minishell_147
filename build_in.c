@@ -1,7 +1,7 @@
 #include "minishell.h"
 #include "libft.h"
 
-int		if_buildin(char *cmd)
+int	if_buildin(char *cmd)
 {
 	if (!cmd)
 		return (0);
@@ -22,7 +22,7 @@ int		if_buildin(char *cmd)
 	return (0);
 }
 
-int		builtin_unset(t_varlist **head_var, t_command *cmd_node)
+int	builtin_unset(t_varlist **head_var, t_command *cmd_node)
 {
 	t_varlist	*cur;
 	t_varlist	*prev;
@@ -38,8 +38,8 @@ int		builtin_unset(t_varlist **head_var, t_command *cmd_node)
 			if (ft_strcmp(cur->var_data->var, cmd_node->args[i]) == 0
 				&& cur->var_data->exported == 1)
 			{
-				unset_variable_from_list(head_var, &cur, &prev);
-				continue;
+				unset_variable(head_var, &cur, &prev);
+				continue ;
 			}
 			prev = cur;
 			cur = cur->next;
@@ -49,48 +49,49 @@ int		builtin_unset(t_varlist **head_var, t_command *cmd_node)
 	return (0);
 }
 
-int		builtin_export(t_varlist **head_var, t_command *cmd_node, int sub_process)
+int	builtin_export(t_varlist **hd_v, t_command *cmd, int sub_p)
 {
 	t_variable	*var_node;
 	int			i;
 
 	var_node = NULL;
-	if (cmd_node->argc == 1)
-		print_all_variable_in_list(head_var);
-	else if (!sub_process)
+	if (cmd->argc == 1)
+		print_all_variable_in_list(hd_v);
+	else if (!sub_p)
 	{
 		i = 1;
-		while (i < cmd_node->argc)
+		while (i < cmd->argc)
 		{
-			if (process_var_val_export(head_var, cmd_node->args[i], var_node, cmd_node) == 1)
-				return (put_export_err_msg(cmd_node));
+			if (process_var_val_export(hd_v, cmd->args[i], var_node, cmd) == 1)
+				return (put_export_err_msg(cmd));
 			i++;
 		}
 	}
 	return (0);
 }
 
-int		execute_builtin(t_varlist **head_var, t_command *cmd_node, char **ev, int sub_process)
+int	execute_builtin(t_varlist **hd_v, t_command *commd, char **ev, int sub_proc)
 {
-	if (!cmd_node || !cmd_node->args)
+	(void)ev;
+	if (!commd || !commd->args)
 		return (0);
-	if (ft_strcmp(cmd_node->args[0], "cd") == 0)
-		return (builtin_cd(cmd_node, head_var));
-	if (ft_strcmp(cmd_node->args[0], "echo") == 0)
-		return (builtin_echo(cmd_node));
-	if (ft_strcmp(cmd_node->args[0], "export") == 0)
-		return (builtin_export(head_var, cmd_node, sub_process));
-	if (ft_strcmp(cmd_node->args[0], "unset") == 0)
+	if (ft_strcmp(commd->args[0], "cd") == 0)
+		return (builtin_cd(commd, hd_v));
+	if (ft_strcmp(commd->args[0], "echo") == 0)
+		return (builtin_echo(commd));
+	if (ft_strcmp(commd->args[0], "export") == 0)
+		return (builtin_export(hd_v, commd, sub_proc));
+	if (ft_strcmp(commd->args[0], "unset") == 0)
 	{
-		if (!cmd_node->args[1] || cmd_node->args[1][0] == '\0')
+		if (!commd->args[1] || commd->args[1][0] == '\0')
 			return (0);
-		return (builtin_unset(head_var, cmd_node));
+		return (builtin_unset(hd_v, commd));
 	}
-	if (ft_strcmp(cmd_node->args[0], "env") == 0)
-		return (builtin_env(ev, head_var));
-	if (ft_strcmp(cmd_node->args[0], "exit") == 0)
-		return (builtin_exit(cmd_node));
-	if (ft_strcmp(cmd_node->args[0], "pwd") == 0)
+	if (ft_strcmp(commd->args[0], "env") == 0)
+		return (builtin_env(hd_v));
+	if (ft_strcmp(commd->args[0], "exit") == 0)
+		return (builtin_exit(commd));
+	if (ft_strcmp(commd->args[0], "pwd") == 0)
 		return (builtin_pwd());
 	return (1);
 }

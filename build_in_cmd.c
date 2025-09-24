@@ -1,7 +1,7 @@
 #include "minishell.h"
 #include "libft.h"
 
-int		builtin_cd(t_command *cmd, t_varlist **head)
+int	builtin_cd(t_command *cmd, t_varlist **head)
 {
 	char	*path;
 
@@ -22,7 +22,7 @@ int		builtin_cd(t_command *cmd, t_varlist **head)
 	return (0);
 }
 
-int		builtin_pwd(void)
+int	builtin_pwd(void)
 {
 	char	*cwd;
 
@@ -40,10 +40,9 @@ int		builtin_pwd(void)
 
 //Iterate through env array and print each BUT
 //Might need to handle arguments
-int	builtin_env(char **ev, t_varlist **head)
+int	builtin_env(t_varlist **head)
 {
 	t_varlist	*cur;
-	(void)ev;
 
 	cur = *head;
 	while (cur)
@@ -56,7 +55,7 @@ int	builtin_env(char **ev, t_varlist **head)
 }
 
 // I think this one is fine
-int		builtin_exit(t_command *cmd)
+int	builtin_exit(t_command *cmd)
 {
 	int	exit_code;
 	int	i;
@@ -84,7 +83,7 @@ int		builtin_exit(t_command *cmd)
 	exit(exit_code);
 }
 
-int		builtin_echo(t_command *cmd)
+int	builtin_echo(t_command *cmd)
 {
 	int	i;
 	int	newline;

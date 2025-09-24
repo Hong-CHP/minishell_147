@@ -23,8 +23,8 @@ void	free_cmdlist_content(t_cmdlist **cur)
 
 void	free_cmdlist(t_cmdlist **head_cmd)
 {
-	t_cmdlist *cur;
-	t_cmdlist *next;
+	t_cmdlist	*cur;
+	t_cmdlist	*next;
 
 	cur = *head_cmd;
 	while (cur)
@@ -72,4 +72,3 @@ void	clean_all(t_cmdlist **head_cmd, t_parser *parser, t_pipex *pipe_data)
 	if (pipe_data)
 		free(pipe_data);
 }
-
