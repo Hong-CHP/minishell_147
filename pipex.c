@@ -74,6 +74,8 @@ int	wait_child_process(pid_t last_pid)
 				exit_code = 128 + WTERMSIG(new_status);
 				if (exit_code == 130)
 					ft_putchar_fd('\n', 1);
+				if (exit_code == 131)
+					ft_putstr_fd("Quit (core dumped)\n", 1);
 			}
 		}
 		pid = wait(&new_status);

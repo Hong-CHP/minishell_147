@@ -90,16 +90,18 @@ int	no_executable_if_empty(t_command *cmd, t_parser *parser)
 	return (1);
 }
 
-// void	update_exit_status(int status, t_parser *parser)
-// {
-// 	if (WIFEXITED(status))
-// 		*parser->g_exit_status = WEXITSTATUS(status);
-// 	else if (WIFSIGNALED(status))
-// 	{
-// 		*parser->g_exit_status = 128 + WTERMSIG(status);
-// 		if (*parser->g_exit_status == 130)
-// 			ft_putchar_fd('\n', 1);
-// 	}
-// 	else
-// 		*parser->g_exit_status = 1;
-// }
+void	update_exit_status(int status, t_parser *parser)
+{
+	if (WIFEXITED(status))
+		*parser->g_exit_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+	{
+		*parser->g_exit_status = 128 + WTERMSIG(status);
+		if (*parser->g_exit_status == 130)
+			ft_putchar_fd('\n', 1);
+		if (*parser->g_exit_status == 131)
+			ft_putstr_fd("Quit(core dumped)\n", 1);
+	}
+	else
+		*parser->g_exit_status = 1;
+}

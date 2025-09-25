@@ -13,13 +13,43 @@ void	exit_if_empty(t_command *command, int *empty)
 	}
 }
 
+void	check_each_path_per_slash(char *t_path, t_parser *parser)
+{
+	char	*tmp_path;
+	char	*part;
+	char	*last_slash;
+	char	*end;
+
+	tmp_path = t_path;
+	part = NULL;
+	end = NULL;
+	last_slash = ft_strchr(tmp_path, '/');
+	while (last_slash)
+	{
+		end = ft_strchr(last_slash + 1, '/');
+		if (end == NULL)
+			break ;
+		part = ft_substr(tmp_path, 0, end - tmp_path);
+		if (!check_dir_validate(part))
+		{
+			free(part);
+			set_error(parser, "Not a directory", 126);
+			ft_put_err_msg(parser, NULL, t_path);
+			exit(126);
+		}
+		free(part);
+		last_slash = end;
+	}
+}
+
 void	path_exist_issue(t_command *cmd, int *emp, t_parser *p, char *ex_path)
 {
 	if (if_slash(cmd->args[*emp]) > 0 && !ex_path)
 	{
-		set_error(p, "Not a directory", 126);
+		check_each_path_per_slash(cmd->args[*emp], p);
+		set_error(p, "No such file or directory", 127);
 		ft_put_err_msg(p, NULL, cmd->args[*emp]);
-		exit(126);
+		exit(127);
 	}
 	if (!ex_path)
 	{

@@ -10,6 +10,8 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 # include <sys/wait.h>
+# include <sys/types.h>
+# include <dirent.h>
 
 extern int catch;
 typedef struct s_cmdlist t_cmdlist;
@@ -252,9 +254,10 @@ int		no_executable_if_empty(t_command *cmd, t_parser *parser);
 int		if_slash(char *str);
 char	**find_sign_then_split(char *str);
 void	free_split(char **strs);
-// void	update_exit_status(int status, t_parser *parser);
+void	update_exit_status(int status, t_parser *parser);
 // execute_cmd_search_path.c
 char	*find_exe_path(char **args, t_varlist **head_var);
+int		check_dir_validate(char *part_path);
 //execute_single_cmd.c
 void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser);
 //execute_here_doc.c

@@ -1,6 +1,19 @@
 #include "minishell.h"
 #include "libft.h"
 
+int		check_dir_validate(char *part_path)
+{
+	DIR		*dir;
+
+	dir = opendir(part_path);
+	if (dir)
+	{
+		closedir(dir);
+		return (1);
+	}
+	return (0);
+}
+
 char	**extract_path(t_varlist **head_var)
 {
 	t_varlist	*cur;

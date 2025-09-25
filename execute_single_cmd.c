@@ -77,7 +77,9 @@ int		executable_not_build_in(t_varlist **head_var, t_command *cmd, t_pipex *pipe
 void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser)
 {
 	pid_t	pid;
+	int		status;
 
+	status = 0;
 	if (!executable_not_build_in(head_var, cmd, pipe_data, parser))
 		return ;
 	pid = fork();
@@ -88,15 +90,19 @@ void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data
 		return ;
 	}
 	if (pid == 0)
-	{
-		// signal(SIGQUIT, SIG_DFL);
+	{	
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
 		single_cmd_child_redir(&pipe_data);
 		execute_cmd(head_var, cmd, pipe_data->envp, parser);
 	}
 	else
 	{
 		catch = 1;
-		*parser->g_exit_status = wait_child_process(pid);
+		// *parser->g_exit_status = wait_child_process(pid);
+		waitpid(pid, &status, 0);
+		update_exit_status(status, parser);
+		catch = 0;
 	}
 }
 

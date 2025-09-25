@@ -8,11 +8,9 @@ void	handle_sigint(int sig)
 {
 	(void)sig;
 	if (catch == 1)
-	{
 		return ;
-	}
 	ft_putchar_fd('\n', 1);
-	rl_replace_line("", 0); 
+	rl_replace_line("", 0);
 	rl_on_new_line();
 	rl_redisplay();
 }
@@ -32,7 +30,7 @@ void	read_the_line(char *input, t_varlist **head_var, char **envp, int *g_exit)
 {
 	while (1)
 	{
-		catch = 0;
+		// catch = 0;
 		input = readline("\1\033[1;33m\2minishell\1\033[0m\2> ");
 		if (input == NULL)
 		{
