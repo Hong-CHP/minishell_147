@@ -125,6 +125,13 @@ typedef struct s_hd_limit
 	int		dollar;
 }				t_hd_limit;
 
+typedef struct s_varvals
+{
+	char	**vars;
+	char	**vals;
+	int		nb_vars;
+}				t_varvals;
+
 typedef struct s_fill
 {
     int     i;
@@ -210,14 +217,15 @@ char	*extract_if_double_quote(char *buf, t_parser *parser, int *len, t_handler_q
 //dollar_sign.c
 char	**find_dollar_sign(char *str, char **vars);
 char	*reg_dollar_sign(char *str, t_varlist **head_var, t_parser *parser);
-int		get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_var, t_parser *parser);
+int		get_vals_and_tot_len(char *str, t_varvals *varvals, t_varlist **head_var, t_parser *parser);
 char	*fill_words_with_real_vals(char *str, char **vars, char **vals, int t_len);
 //dollar_sign_utils.c
 int		is_varname_format(char *str);
-char	*replace_by_real_val(t_varlist **head, t_parser *p, int nb_v, char *str);
+char	*replace_by_real_val(t_varlist **head, t_parser *p, t_varvals *varvals, char *str);
 // dollar_sign_utils_second.c
 void	free_vars_vals(char **vars, char **vals);
 int		if_dollar_sign(char *str);
+void	clean_vars_vals_struct(t_varvals **varvals);
 //process_token.c
 int		is_cmd_token(int type);
 int		process_token(t_parser *p, t_cmdlist *cmd);

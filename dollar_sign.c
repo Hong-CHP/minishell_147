@@ -72,7 +72,7 @@ char	*check_same_var_in_varlist(char *var, t_varlist **head_var)
 	return (NULL);
 }
 
-int	get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_var, t_parser *parser)
+int	get_vals_and_tot_len(char *str, t_varvals *varvals, t_varlist **head_var, t_parser *parser)
 {
 	int		i;
 	size_t	vars_len;
@@ -82,18 +82,18 @@ int	get_vals_and_tot_len(char *str, char **vals, char **vars, t_varlist **head_v
 	i = 0;
 	vars_len = 0;
 	vals_len = 0;
-	while (vars[i])
+	while (varvals->vars[i])
 	{
-		vars_len += ft_strlen(vars[i]);
-		vals[i] = check_same_var_in_varlist(vars[i], head_var);
-		if (!vals[i] && ft_strcmp(vars[i], "?") == 0)
-			vals[i] = ft_itoa(*parser->g_exit_status);
-		else if (!vals[i])
-			vals[i] = ft_strdup("");
-		vals_len += ft_strlen(vals[i]);
+		vars_len += ft_strlen(varvals->vars[i]);
+		varvals->vals[i] = check_same_var_in_varlist(varvals->vars[i], head_var);
+		if (!varvals->vals[i] && ft_strcmp(varvals->vars[i], "?") == 0)
+			varvals->vals[i] = ft_itoa(*parser->g_exit_status);
+		else if (!varvals->vals[i])
+			varvals->vals[i] = ft_strdup("");
+		vals_len += ft_strlen(varvals->vals[i]);
 		i++;
 	}
-	vals[i] = NULL;
+	varvals->vals[i] = NULL;
 	t_len = ft_strlen(str) - if_dollar_sign(str) - vars_len + vals_len;
 	return (t_len);
 }
@@ -102,13 +102,22 @@ char	*reg_dollar_sign(char *str, t_varlist **head_var, t_parser *parser)
 {
 	int		nb_vars;
 	char	*word;
+	t_varvals	*varvals;
 
 	word = NULL;
 	nb_vars = if_dollar_sign(str);
 	if (nb_vars == 0)
 		return (ft_strdup(str));
-	word = replace_by_real_val(head_var, parser, nb_vars, str);
-	if (!word)
+	varvals = malloc(sizeof(t_varvals) * nb_vars);
+	if (!varvals)
 		return (NULL);
+	varvals->nb_vars = nb_vars;
+	word = replace_by_real_val(head_var, parser, varvals, str);
+	if (!word)
+	{
+		free(varvals);
+		return (NULL);
+	}
+	free(varvals);
 	return (word);
 }

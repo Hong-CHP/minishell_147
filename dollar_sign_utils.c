@@ -88,30 +88,28 @@ char	*fill_words_with_real_vals(char *str, char **vars, char **vals, int len)
 	return (ctx.word);
 }
 
-char	*replace_by_real_val(t_varlist **head, t_parser *p, int nb_v, char *str)
+char	*replace_by_real_val(t_varlist **head, t_parser *p, t_varvals *varvals, char *str)
 {
 	char	*word;
 	int		t_len;
-	char	**vars;
-	char	**vals;
 
-	vars = malloc(sizeof(char *) * (nb_v + 1));
-	if (!vars)
+	varvals->vars = malloc(sizeof(char *) * (varvals->nb_vars + 1));
+	if (!varvals->vars)
 		return (NULL);
-	find_dollar_sign(str, vars);
-	vals = malloc(sizeof(char *) * (nb_v + 1));
-	if (!vals)
+	find_dollar_sign(str, varvals->vars);
+	varvals->vals = malloc(sizeof(char *) * (varvals->nb_vars + 1));
+	if (!varvals->vals)
 	{
-		free_vars_vals(vars, vals);
+		free_vars_vals(varvals->vars, varvals->vals);
 		return (NULL);
 	}
-	t_len = get_vals_and_tot_len(str, vals, vars, head, p);
-	word = fill_words_with_real_vals(str, vars, vals, t_len);
+	t_len = get_vals_and_tot_len(str, varvals, head, p);
+	word = fill_words_with_real_vals(str, varvals->vars, varvals->vals, t_len);
 	if (!word)
 	{
-		free_vars_vals(vars, vals);
+		free_vars_vals(varvals->vars, varvals->vals);
 		return (NULL);
 	}
-	free_vars_vals(vars, vals);
+	free_vars_vals(varvals->vars, varvals->vals);
 	return (word);
 }
