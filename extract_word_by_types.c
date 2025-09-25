@@ -61,8 +61,8 @@ char	*extract_by_type_sign(char *buf, t_parser *parser, t_handler_qt **handler)
 	while (parser->input[parser->pos] && !is_separator(parser->input[parser->pos]))
 	{
 		extract_by_slash_quotes(parser, &len, buf);
-	    if (!extract_loop_body(buf, parser, handler, &len))
-            return (NULL);
+		if (!extract_loop_body(buf, parser, handler, &len))
+			return (NULL);
 	}
 	buf[len] = '\0';
 	return (buf);

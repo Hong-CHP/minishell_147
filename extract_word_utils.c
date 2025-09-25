@@ -50,15 +50,15 @@ void	clean_handler_and_buf_for_extract(char *buf, t_handler_qt **handler)
 		free_handler_lst(handler);
 }
 
-int is_separator(char c)
+int		is_separator(char c)
 {
-    return (c == ' '  || c == '\t' || c == '\n' ||
-            c == '|'  || c == '<'  || c == '>'  ||
-            c == '&'  || c == ';'  ||
-            c == '('  || c == ')');
+	return (c == ' '  || c == '\t' || c == '\n' ||
+			c == '|'  || c == '<'  || c == '>'  ||
+			c == '&'  || c == ';'  ||
+			c == '('  || c == ')');
 }
 
-int	if_still_space(char *res)
+int		if_still_space(char *res)
 {
 	int	i;
 

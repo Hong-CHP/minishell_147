@@ -15,18 +15,18 @@ t_variable	*search_target_var_node(t_varlist **head, char *find_var)
 	return (NULL);
 }
 
-void    find_var_node_modif_val(t_variable *modif_var_node, char *match)
+void	find_var_node_modif_val(t_variable *modif_var_node, char *match)
 {
-    char	*find_val;
+	char	*find_val;
 	int		ch;
 
 	if (*(match + 1))
-    	find_val = ft_strdup(match + 1);
+		find_val = ft_strdup(match + 1);
 	else
 		find_val = ft_strdup("");
-    if (!find_val)
+	if (!find_val)
 	{
-        return ;
+		return ;
 	}
 	ch = if_quote(find_val);
 	if (ch == -1)
@@ -36,7 +36,7 @@ void    find_var_node_modif_val(t_variable *modif_var_node, char *match)
 		return ;
 	}
 	if (modif_var_node->val)
-        free(modif_var_node->val);
+		free(modif_var_node->val);
 	replace_new_val_for_val(find_val, modif_var_node);
 }
 

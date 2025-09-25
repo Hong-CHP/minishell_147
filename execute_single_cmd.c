@@ -77,9 +77,7 @@ int		executable_not_build_in(t_varlist **head_var, t_command *cmd, t_pipex *pipe
 void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data, t_parser *parser)
 {
 	pid_t	pid;
-	int		status;
 
-	status = 0;
 	if (!executable_not_build_in(head_var, cmd, pipe_data, parser))
 		return ;
 	pid = fork();
@@ -99,9 +97,7 @@ void	execute_single_cmd(t_varlist **head_var, t_command *cmd, t_pipex *pipe_data
 	else
 	{
 		catch = 1;
-		// *parser->g_exit_status = wait_child_process(pid);
-		waitpid(pid, &status, 0);
-		update_exit_status(status, parser);
+		*parser->g_exit_status = wait_child_process(pid);
 		catch = 0;
 	}
 }
